@@ -1,0 +1,5 @@
+%relatorio em knitr + latex
+
+O dataset Cadastro de Expulsões da Administração Federal (CEAF), contém informações sobre as penalidades expulsivas, como por exemplo, demissões, cassação de aposentadoria e distituição de cargo em comissão ou função comissionada à servidores públicos, que são efetivos ou não, no contexto do Poder Executivo Federal.
+
+Número de expulsões: 4885 entre 2003 à 2018.
