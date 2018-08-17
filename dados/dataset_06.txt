@@ -1,0 +1,3 @@
+Catálogo de Teses e Dissertações da Pós-Graduação de 2017, possui como principais variáveis: Nome de Tese ou Dissertação, Área de avaliação, Área do conhecimento, Nome do autor, data de defesa.
+
+Obs.: O arquivo original possuia 83283 amostras, devido ao github não suportar um arquivo maior que 25 MB apenas as primeiras 8499 amostras constam no arquivo.
