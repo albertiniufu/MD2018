@@ -1,0 +1,6 @@
+#!/bin/bash
+wget https://app.dnpm.gov.br/DadosAbertos/SCM/Cessoes_de_Direitos.csv
+iconv -f iso-8859-15 -t ascii//translit Cessoes_de_Direitos.csv  > FCessoes_de_Direitos.csv
+gedit FCessoes_de_Direitos.csv
+
+
