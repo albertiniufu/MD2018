@@ -1,0 +1,2 @@
+O data set 06 é composto por dados acerca de teses e dissertações da pós-graduação públicadas no ano de 2017. Algumas das variáveis
+presentes são, nome da tese ou dissertação, área de avaliação, nome do autor e data de defesa.
