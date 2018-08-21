@@ -1,3 +1,4 @@
+
 %relatorio em knitr + latex
 
 O DataSet escolhido em sala de aula foi sobre o tema: Cadastro minerio, que consiste em uma planilha que conten diversos dados, entre eles
@@ -5,7 +6,6 @@ informações da Superintendência que nos diz em que estado se encontra a mesma
 de requerimento existem varios tipos entre eles (Requerimento de Registro de Licença, Requerimento de Autorização de Pesquisa, Requerimento
 de Disponibilidade para lavra), Fase Atual que se encontra o processo, CPF CNPJ do titular do requerinte, Titular que dita o nome da empresa
 ou responsável, Municipio(s) que se realizará a ação, Situação e Data da Cessão
-
 
 
 
