@@ -1,0 +1,5 @@
+   %relatorio em knitr + LaTeX
+   
+   Os datasets dos servidores civis e militares do executivo federal, contêm planilhas com informações de cadastro de 360999 de militares e 788912 de civis, dados de remunerações, observações, honorários de civis e militares, além de dados de afastamento para servidores civis.
+   Nos militares podemos ver os nomes,  variados tipos de cargos dentro do exercito, grandes diferenças nos sálarios, quais militares em exercício no exterior ou em ajuste de contas, se faz parte da Marinha, Aeronáutica ou exercito, tipo de diploma para ingresso, além de muito mais informações disponiveis para análise.
+   Nos servidores civis também podemos ver nomes, tipos de cargo(com muito mais tipos que o militar), salários, classe e nivel do cargo, sua atividade, observações de valores pagos e exercicios no exterior, unidade organizacional(Diretoria geral do IFC), organização(IFC), parte de qual ministério está sua organização, vinculo com a organização, jornada em horas por semana, tipo de diploma, afastamentos, honorários em empresas ou para pessoas no caso de advogados, e muitos outros dados.
