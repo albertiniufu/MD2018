@@ -1,0 +1,8 @@
+Por meio da API de dados abertos da Câmara dos Deputado, o conjunto de dados analisados foram as proposições apresentadas à Câmara dos Deputados para deliberação.
+
+Foram apresentadas 7891 proposições no ano de 2018 até a data de 16 de Agosto, incluindo os tipos de proposições: 
+projetos de lei, projetos de decreto legislativo, requerimento de informação, requerimento de retirada de assinatura, requerimento de criação de frente parlamentar, medidas provisórias, entre outros.
+
+Também é possível acompanhar o status da proposições, como no status da situação temos os exemplos: aguardando deliberação, aguardando encaminhamento, pronta para pauta, tramitação do requerimento finalizada, entre outros.
+
+
