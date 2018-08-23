@@ -10,18 +10,18 @@ Quando você executar o código nestas notas, os resultados vão aparecer logo a
 
 Primeiramente, devemos lembrar da configuração do proxy de rede:
 
-```{r}
+```
 Sys.setenv("https_proxy"="proxy.ufu.br:3128")
 ```
 
 Para facilitar a etapa de instalar e carregar pacotes de funções instalar o pacote *pacman*:
 
-```{r}
+```
 install.packages("pacman")
 ```
 
 Para instalar novos pacotes com o `pacman` usar a função `p_load()`:
-```{r}
+```
 require(pacman)
 # esta função vai instalar o pacote se ele ainda não estiver no sistema
 p_load(ggplot2)
@@ -29,7 +29,7 @@ p_load(ggplot2)
 
 Para a manutenção de um repositório de versões dos códigos de mineração de dados, o primeiro passo foi criar uma conta no [github](https://github.com). Depois foi necessário, usando a interface do github, fazer um fork, que é uma maneira de copiar o projeto e manter uma ligação com o projeto original. 
 
-```{bash}
+```
 #definir endereço do fork
 export ENDERECO_DO_USUARIO="https://github.com/albertiniufu/"
 export DIRETORIO_DO_FORK="MD2018/"
@@ -41,12 +41,12 @@ git clone "$ENDERECO_DO_USUARIO""$DIRETORIO_DO_FORK"
 
 A atividade da aula de hoje pede criar e adicionar um arquivo no repositório. 
 
-```{bash}
+```
 vim $DIRETORIO_DO_FORK/apresentacao/explicacao.txt
 ```
 
 Depois da criação é necessário adicionar o arquivo criado no repositório
-```{bash}
+```
 git add apresentacao/explicacao.txt
 git commit -m "criacao do arquivo de explicacao.txt"
 ```

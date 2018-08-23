@@ -1,7 +1,10 @@
 ---
 title: "Mineração de Dados - Notas da Aula 3"
-author: Prof. Marcelo Keese Albertini, Universidade Federal de Uberlândia
-output: html_notebook
+author: "Prof. Marcelo Keese Albertini, Universidade Federal de Uberlândia"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
 ---
 
 Na aula passada aprendemos como estruturar os arquivos de um projeto para capturar, pré-processar e carregar de forma organizada fontes de dados em `data.frame` e `tibble` e inspecionar com a função `dplyr::glimpse()`.
@@ -61,11 +64,39 @@ cessoes <- tbl_df(read.csv("cessoes.csv"))
 glimpse(cessoes)
 ```
 
-Um exempo é a coluna `cessoes$Data.da.Cessao` cujo tipo de dado pode ser transformado em `Date` da seguinte forma:
+É possível acessar diretamente a coluna de um `data.frame` se usarmos a função `attach()`:
 
 ```{r}
-cessoes$Data.da.Cessao = format.Date(as.character(cessoes$Data.da.Cessao),"%D/%m/%Y")
+attach(cessoes)
+str(Situacao)
 ```
 
+Um exempo é a coluna `Data.da.Cessao` cujo tipo de dado pode ser transformado em `Date` da seguinte forma:
+
+```{r}
+class(cessoes$Data.da.Cessao)
+cessoes$Data.da.Cessao = as.Date(as.character(Data.da.Cessao),"%d/%m/%Y")
+class(cessoes$Data.da.Cessao)
+```
+
+Quando o conteúdo de uma coluna de um arquivo `.csv` é textual, a função `read.csv` pode atribuir o tipo `factor` no `data.frame` criado. 
+
+Um `factor` é um tipo para variáveis categóricas
+Para verificar quantos tipos `length(levels(Titular))`
+
+```{r}
+length(levels(Titular))
+```
+
+Um `factor` com apenas um `level` tem utilidade limitada. Vamos removê-lo:
+
+```{r}
+# tem 11 colunas
+ncol(cessoes) 
+# removendo factor com 1 só level
+cessoes$Situacao <- c()
+# agora tem 10 colunas
+ncol(cessoes) #
+```
 
 
