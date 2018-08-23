@@ -1,37 +1,51 @@
 ---
-title: "MineraÁ„o de Dados - Aula 1 "
+title: "Minera√ß√£o de Dados - Notas da Aula 1 "
+author: Prof. Marcelo Keese Albertini, Universidade Federal de Uberl√¢ndia
 output: html_notebook
 ---
 
-Estas s„o as notas did·ticas da disciplina [GBC212  - MineraÁ„o de Dados](http://www.facom.ufu.br/~albertini/md), 2∫ semestre de 2018. 
+Estas s√£o as notas de aula da disciplina [GBC212  - Minera√ß√£o de Dados](http://www.facom.ufu.br/~albertini/md), 2¬∫ semestre de 2018. 
 
-Quando vocÍ executar o cÛdigo nestas notas, os resultados v„o aparecer logo apÛs o cÛdigo.
+Quando voc√™ executar o c√≥digo nestas notas, os resultados v√£o aparecer logo ap√≥s o c√≥digo.
 
-O primeiro passo foi criar uma conta no github.
-Depois foi necess·rio fazer um fork, que È uma maneira de copiar o projeto e manter uma ligaÁ„o com o projeto original. 
+Primeiramente, devemos lembrar da configura√ß√£o do proxy de rede:
 
+```{r}
+Sys.setenv("https_proxy"="proxy.ufu.br:3128")
+```
+
+Para facilitar a etapa de instalar e carregar pacotes de fun√ß√µes instalar o pacote *pacman*:
+
+```{r}
+install.packages("pacman")
+```
+
+Para instalar novos pacotes com o `pacman` usar a fun√ß√£o `p_load()`:
+```{r}
+require(pacman)
+# esta fun√ß√£o vai instalar o pacote se ele ainda n√£o estiver no sistema
+p_load(ggplot2)
+```
+
+Para a manuten√ß√£o de um reposit√≥rio de vers√µes dos c√≥digos de minera√ß√£o de dados, o primeiro passo foi criar uma conta no [github](https://github.com). Depois foi necess√°rio, usando a interface do github, fazer um fork, que √© uma maneira de copiar o projeto e manter uma liga√ß√£o com o projeto original. 
 
 ```{bash}
-
-#definir endereÁo do fork
+#definir endere√ßo do fork
 export ENDERECO_DO_USUARIO="https://github.com/albertiniufu/"
 export DIRETORIO_DO_FORK="MD2018/"
 
 # copiar os arquivos em diretorio local
-
 git clone "$ENDERECO_DO_USUARIO""$DIRETORIO_DO_FORK"
 ```
 
 
-A atividade da aula de hoje pede criar e adicionar um arquivo no repositÛrio. 
+A atividade da aula de hoje pede criar e adicionar um arquivo no reposit√≥rio. 
 
 ```{bash}
 vim $DIRETORIO_DO_FORK/apresentacao/explicacao.txt
 ```
 
-
-Depois da criaÁ„o È necess·rio adicionar o arquivo criado no repositÛrio
-
+Depois da cria√ß√£o √© necess√°rio adicionar o arquivo criado no reposit√≥rio
 ```{bash}
 git add apresentacao/explicacao.txt
 git commit -m "criacao do arquivo de explicacao.txt"
