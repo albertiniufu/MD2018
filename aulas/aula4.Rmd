@@ -1,7 +1,94 @@
+
 ---
-title: "Mineração de dados - Aula 4"
-author: "Marcelo Keese Albertini"
-date: "23 de agosto de 2018"
-output: html_document
+title: "Aula 4"
+author: "Marcelo Albertini"
+output: html_notebook
 ---
+
+# Configuração de um ambiente
+
+```{r}
+Sys.setenv(https_proxy="proxy.ufu.br:3128")
+require(pacman)
+
+# Quais opções estão disponíveis?
+head(names(options()))
+
+# para ativar mode de debugging:
+options(error=recover)
+
+#mudando numero de digitos
+print(pi)
+options(digits=3)
+print(pi)
+
+```
+
+# Tipo de dados: table
+
+Um `table` representa uma tabela de contingência:
+
+```{r}
+# data carrega datasets que vêm por padrão no R
+#head(data())
+
+data(UCBAdmissions)
+
+# computacao de tabelas marginais
+margin.table(UCBAdmissions,1)
+margin.table(UCBAdmissions,2)
+margin.table(UCBAdmissions,3)
+
+```
+
+# Extra: data.table
+```{r}
+
+# pacote para tratar xlsx
+p_load(xlsx)
+
+# json
+p_load(jsonlite)
+
+# bancos de dados relacionais: BDI + pacote especifico do SGBD
+p_load(BDI)
+p_load(SQLite)
+
+# pacote especial para big data
+p_load(data.table) 
+```
+
+# Fazendo pré-análises para compreensão dos dados
+```{r}
+str(cars)
+
+# comando para verificar propriedades iniciais dos dados
+summary(cars$speed)
+
+# usar summary para atributos numericos
+summary(cars)
+```
+
+INspeção visual da dispersão por dimensão
+
+```{r}
+boxplot(cars$speed,horizontal = T)
+rug(cars$speed)
+```
+
+# Como mostrar uma figura sem mostrar o código:
+```{r echo=FALSE}
+plot(cars)
+```
+
+
+Atividade desta aula:
+
+* selecionar variáveis numéricas e fazer summary e boxplot
+* selecionar variáveis categóricas e fazer tabelas marginais `table`
+* incluir essas pré-analises no diretorio de analise em arquivos .Rmd
+* pull request
+
+
+
 
