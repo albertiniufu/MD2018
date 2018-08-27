@@ -1,0 +1,53 @@
+---
+title: "Aula 04"
+output: html_notebook
+author: "Adriano Araújo Martins de Resende"
+---
+
+```{r,echo=FALSE}
+require(pacman)
+require(dplyr)
+options(error=recover)
+```
+
+#Paginas
+```{r}
+summary(ccsv$NR_PAGINAS)
+boxplot(ccsv$NR_PAGINAS,horizontal=T)
+```
+
+#Área do conhecimento e Subtipo da produção
+```{r}
+area_tipo <- select(ccsv,"NM_AREA_CONHECIMENTO","NM_SUBTIPO_PRODUCAO")
+str(area_tipo)
+
+tcon <- table(area_tipo)
+str(tcon)
+print(head(tcon))
+
+margin.table(tcon,1)
+margin.table(tcon,2)
+```
+#Instituição de ensino e Grau academico
+```{r}
+ensino_grau <- select(ccsv,"SG_ENTIDADE_ENSINO","NM_GRAU_ACADEMICO")
+str(ensino_grau)
+
+tcont <- table(ensino_grau)
+str(tcont)
+print(head(tcont))
+
+margin.table(tcont,1)
+margin.table(tcont,2)
+```
+
+```{r,echo=FALSE}
+a <- select(ccsv,"NM_AREA_CONHECIMENTO","SG_ENTIDADE_ENSINO","NM_GRAU_ACADEMICO")
+str(a)
+
+t <- table(a)
+str(t)
+print(head(t))
+
+margin.table(t,c(1,2))
+```
