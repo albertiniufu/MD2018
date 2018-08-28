@@ -1,0 +1,18 @@
+1. Faça um clone do repositorio:
+
+git clone github.com/SEU-USUARIO/MD2018
+
+2. Adicionar Arquivos do Repositório Original no seu repositorio:
+
+cd MD2018 # vai para o diretorio do repositorio
+git remote add upstream git://github.com/albertiniufu/MD2018
+git fetch upstream
+
+3. Atualize o seu fork com o repositorio da disciplina para obter novos arquivos:
+
+git pull upstream master
+
+4. Atualize o seu repositorio
+
+git push
+
