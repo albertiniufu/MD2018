@@ -89,6 +89,9 @@ p_load(RSQLite)
 
 # pacote especial para big data
 p_load(data.table) 
+
+# pacote especial para arquivos .sav (SAS, SPSS)
+p_load(foreign) # read.spss
 ```
 
 ## Fazendo pré-análises para compreensão dos dados
@@ -102,7 +105,7 @@ summary(cars$speed)
 summary(cars)
 ```
 
-INspeção visual da dispersão por dimensão
+Inspeção visual da dispersão por dimensão
 
 ```{r}
 boxplot(cars$speed,horizontal = T)
