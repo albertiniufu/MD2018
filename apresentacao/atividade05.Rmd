@@ -1,0 +1,53 @@
+---
+title: "Atividade 05"
+author: "Adriano Araújo Martins de Resende"
+output: html_notebook
+---
+
+```{r,echo=FALSE}
+require(pacman)
+require(dplyr)
+require(ggplot2)
+require(tidyverse)
+
+ccsv <- read_csv2("/home/adriano/Documents/MD/CLSS-01/capes.csv")
+ccsv <- select(ccsv,-c("NM_ORIENTADOR","NM_PROGRAMA","DS_CATEGORIA_ORIENTADOR","NM_CATEGORIA_DOCENTE","NM_DISCENTE","NM_EXPECTATIVA_ATUACAO","IN_ORIENT_PARTICIPOU_BANCA","NM_PROJETO","DS_PALAVRA_CHAVE","NM_TP_VINCULO","NM_SUBAREA_CONHECIMENTO","NM_ESPECIALIDADE","NM_AREA_AVALIACAO","NM_PRODUCAO","NM_AREA_CONCENTRACAO","NR_VOLUME","NM_LINHA_PESQUISA","DT_MATRICULA","CD_ESPECIALIDADE","ID_TP_EXPECTATIVA_ATUACAO","IN_TRABALHO_MESMA_AREA","DT_TITULACAO","NM_UF_IES","CD_AREA_CONHECIMENTO","CD_SUBAREA_CONHECIMENTO","DS_EMAIL_DISCENTE","ID_PESSOA_ORIENTADOR","DH_FIM_LINHA","DH_INICIO_LINHA","DH_FIM_AREA_CONC","DH_INICIO_AREA_CONC","NM_REGIAO","ID_GRAU_ACADEMICO","ID_PESSOA_DISCENTE","DS_BIBLIOTECA_DEPOSITARIA","DS_KEYWORD","DS_ABSTRACT","ID_PROJETO","ID_LINHA_PESQUISA","ID_AREA_CONCENTRACAO","CD_GRANDE_AREA_CONHECIMENTO","ID_SUBTIPO_PRODUCAO","ID_PRODUCAO_INTELECTUAL","AN_BASE","CD_PROGRAMA","NM_ENTIDADE_ENSINO","ID_ADD_PRODUCAO_INTELECTUAL","DS_RESUMO","DS_URL_TEXTO_COMPLETO"))
+```
+
+#Brasil
+```{r}
+br <- ccsv
+ggplot(data=br)+geom_jitter(mapping=aes(y=SG_UF_IES,x=NM_IDIOMA,color=NM_GRANDE_AREA_CONHECIMENTO))
+z <- ggplot(data=br)+geom_bar(mapping=aes(x=NM_GRANDE_AREA_CONHECIMENTO))
+z + coord_flip()
+ggplot(data=br)+geom_jitter(mapping=aes(y=NM_AREA_CONHECIMENTO,x=SG_UF_IES))
+```
+
+#SP
+```{r}
+capesSP <- filter(ccsv,SG_UF_IES == "SP")
+y <- ggplot(data=capesSP)+geom_bar(mapping=aes(x=NM_GRANDE_AREA_CONHECIMENTO))
+y + coord_flip()
+```
+
+#MG
+```{r}
+capesMG <- filter(ccsv,SG_UF_IES == "MG")
+x <- ggplot(data=capesMG)+geom_bar(mapping=aes(x=SG_ENTIDADE_ENSINO))
+x + coord_flip()
+```
+#Ciências Exatas
+```{r}
+exatas <- filter(ccsv,NM_GRANDE_AREA_CONHECIMENTO == "CIENCIAS EXATAS E DA TERRA")
+a <- ggplot(data=exatas)+geom_bar(mapping=aes(x=SG_UF_IES))
+a + coord_flip()
+ggplot(data=exatas)+geom_jitter(mapping=aes(y=SG_UF_IES,x=NM_IDIOMA,color=NM_SUBTIPO_PRODUCAO))
+```
+
+#Ciências da Saude
+```{r}
+saude <- filter(ccsv,NM_GRANDE_AREA_CONHECIMENTO == "CIENCIAS DA SAUDE")
+b <- ggplot(data=saude)+geom_bar(mapping=aes(x=SG_UF_IES))
+b + coord_flip()
+ggplot(data=exatas)+geom_jitter(mapping=aes(y=SG_UF_IES,x=NM_IDIOMA,color=NM_SUBTIPO_PRODUCAO))
+```
