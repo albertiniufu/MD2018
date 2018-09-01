@@ -1,0 +1,66 @@
+---
+title: "Mineração de Dados - Notas da Aula 2"
+author: Prof. Marcelo Keese Albertini, Universidade Federal de Uberlândia
+output: html_notebook
+---
+
+Nesta aula veremos como estruturar os arquivos de um projeto para capturar, pré-processar e carregar de forma organizada fontes de dados em *data.frame* e *tibble* e inspecionar com a função *dplyr::glimpse()*.
+
+Primeiramente lembrar (novamente) do proxy e de carregar o pacote `pacman`:
+
+```{r}
+Sys.setenv(https_proxy="proxy.ufu.br:3128")
+require(pacman)
+```
+
+É possível baixar dados de uma url usando o pacote `curl`, que serve para efetuar comunições por meio de diversos protocolos de redes. Devemos carregar ele então:
+
+```{r}
+p_load(curl)
+```
+
+Vamos baixar o dataset do governo brasileiro sobre a [concessão de direitos de exploração de minérios](http://dados.gov.br/dataset/sistema-de-cadastro-mineiro/resource/c11f8a7d-34bb-41eb-bb67-8e2df99c218f) com o seguinte:
+
+```{r}
+curl_download("https://app.dnpm.gov.br/DadosAbertos/SCM/Cessoes_de_Direitos.csv","cessoes.raw", quiet=T)
+```
+
+O arquivo baixado tem um erro na formatação de um dos nomes de empresas no seu cadastro. Em alguma linha aparece a seguinte string  `D" ANA`, cuja aspas duplas deve ser removida. Além disso, simplifica o trabalho de processamento do arquivo a conversão da sua codificação para ASCII.
+
+```{bash}
+iconv -f ISO8859-1 -t ASCII//translit cessoes.raw | sed 's/ D" ANA/ D ANA/g' > cessoes.csv
+```
+
+Os comandos de download (`curl`) e de pré-processamento (`iconv` e `sed`) podem ser incluídos dentro de um arquivo de bash script `download.sh` a ser chamado por um arquivo `Makefile` contendo o seguinte conteúdo:
+
+```make
+all: cessoes.csv
+  download.sh
+```
+
+O arquivo `Makefile` e o arquivo `download.sh` são criados em um subdiretório nomeado `dados`.
+Outros dois subdiretórios serão `analise` e `apresentacao` que conterão scripts que consumirão os dados carregados a partir do dado obtido e pré-processado em `download.sh`.
+
+Para carregar os dados no R, é costumeiro usar um script especializado em R nomeado de `loadCessoes.R`:
+
+```{r}
+require(dplyr)
+cessoes <- tbl_df(read.csv("cessoes.csv")) # ou read_csv("cessoes.csv")
+```
+
+Após a variável `cessoes` ser incluída no ambiente, é possível trabalhar com os dados para identificar o que será 
+útil para mineração:
+
+```{r}
+glimpse(cessoes)
+```
+
+
+
+
+
+
+
+
+
+
