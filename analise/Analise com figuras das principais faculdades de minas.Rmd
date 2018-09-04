@@ -1,0 +1,80 @@
+---
+title: "Fuguras sobre os dados"
+author: "Bernardo"
+date: "3 de setembro de 2018"
+output: html_document
+---
+
+#Relação de salário com a jornada de trabalho em horas.
+#APESAR DE EXISTIR EXCEÇOES, PESSOAS COM DEDICAÇÃO ESCLUSIVA TEM A MÉDIA DE GANHO MAIOR.
+```{r setup, include=FALSE}
+require(pacman)
+require(dplyr)
+require(readr)
+
+cadastro <- cadastrocivil
+
+FaculMinas <- filter(cadastro, ORG_EXERCICIO == "UNIVERSIDADE FED.DO TRIANGULO MINEIRO")
+
+manter=c(); 
+for (atr in names(FaculMinas)) { 
+  if (length(table(FaculMinas[,atr]))>1) {
+    manter<-c(manter,atr)
+  } 
+}
+
+FaculMinas <- select(FaculMinas, manter)
+
+
+manter <- c( "Id_SERVIDOR_PORTAL",   "NOME",           
+ "DESCRICAO_CARGO", "CLASSE_CARGO",   
+"REFERENCIA_CARGO", "NIVEL_CARGO", 
+ "SIGLA_FUNCAO", "NIVEL_FUNCAO", 
+ "FUNCAO", "CODIGO_ATIVIDADE",
+"ATIVIDADE" , "COD_UORG_LOTACAO",
+ "UORG_LOTACAO", "ORG_LOTACAO" ,
+"ORGSUP_LOTACAO" ,        "UORG_EXERCICIO" , "TIPO_VINCULO" ,         "JORNADA_DE_TRABALHO" ,
+"DATA_INGRESSO_CARGOFUNCAO", "DATA_INGRESSO_ORGAO")  
+
+FaculMinas <- FaculMinas %>% select(manter) %>% filter(FUNCAO!="Sem informacao")
+
+remuneracao <- read_csv2("/home/gudnunes/Área de Trabalho/Mineração de dados/MD2018/dados/Remuneracao.csv")
+remuneracao <- remuneracao %>% select(Id_SERVIDOR_PORTAL, `REMUNERACAO BASICA BRUTA (R$)`)
+FaculMinas<-left_join(x=FaculMinas,y=remuneracao)
+FaculMinas$DATA_INGRESSO_ORGAO <- as.Date(FaculMinas$DATA_INGRESSO_ORGAO,format="%d/%m/%Y")
+
+
+attach(FaculMinas)
+ggplot(data=FaculMinas)+geom_point(mapping=aes(x=`REMUNERACAO BASICA BRUTA (R$)`,y=JORNADA_DE_TRABALHO))
+
+
+```
+
+
+#Na UFMG, os cargos com mais funcionarios entre os quatro(DIRETOR, COORDENADOR, REITOR E SECRETARIA) são:
+```{r}
+
+FaculMinas %>% filter(ATIVIDADE %in% c("SECRETARIA","DIRETOR","REITOR","COORDENADOR")) %>%ggplot()+geom_bar(mapping=aes(x=ATIVIDADE))
+
+```
+
+## Including Plots
+
+
+#Maiores salários em média, são os do Reitor e Diretor.
+#Anos com mais ingressos na faculdade foi depois de 2000, provavelmente devido ao grande número de cursos inseridos nas faculdades federais, durante o governo Lula.
+```{r}
+require(pacman)
+require(dplyr)
+require(readr)
+require(ggplot2)
+
+
+attach(FaculMinas)
+FaculMinas %>% filter(ATIVIDADE %in% c("SECRETARIA","DIRETOR","REITOR","COORDENADOR")) %>%ggplot()+geom_point(mapping=aes(x=DATA_INGRESSO_ORGAO,y=`REMUNERACAO BASICA BRUTA (R$)`,color=ATIVIDADE))
+
+
+```
+
+
+

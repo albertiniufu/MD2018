@@ -1,0 +1,23 @@
+---
+title: "Exposição simples de dados"
+author: "Bernardo"
+date: "28 de agosto de 2018"
+output: html_document
+---
+
+#Relação da Jornada de trabalho em horas por semana:
+#A média da jornada de trabalho é 40 horas por semana.
+```{r}
+boxplot(horario, horizontal = T)
+
+```
+
+
+
+#Quantidade de funcionários ingressantes em cada data:
+```{r}
+summary(cadastro$DATA_INGRESSO_ORGAO)
+```
+
+
+
