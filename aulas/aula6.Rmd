@@ -56,7 +56,9 @@ validacao$SEXO <- predict(classificador, newdata=select(validacao,-SEXO))
 treino$PREDICAO <- predict(classificador, newdata=select(treino,-SEXO))
 ```
 
+# Atividade de aula
 
+Montar apresentação com 5 slides sobre possíveis problemas de classificação ou regressão no conjunto de dados atribuído em aula.
 
 
 
