@@ -1,0 +1,42 @@
+require(pacman)
+require(dplyr)
+
+#Variaveis numericas excluindo as variaveis categoricas do tipo Fator.
+
+summary(orcamentaria[,3:22])
+
+boxplot(orcamentaria[,3:22], horizontal = T, las=1, notch = T,
+        col = "lightblue", boxwex=0.5, whisklty = 1,
+        outpch=16, outcol = "lightblue", stoplelty=0,
+        ylim = c(0,90), xlab = "Orçamento")
+
+
+#Transformando para Tabela marginais para fazer os 
+#graficos com a variavel Unidade e despesa Orçamentaria(Factor).
+
+unidade <- table(orcamentaria$Unidade.Orçamentária)
+
+despesa <- table(orcamentaria$Grupo.de.Natureza.e.Despesa)
+
+# Grafico 1 (Barras)
+barplot(unidade[order(unidade)], horiz=TRUE, las=1, 
+        col=rainbow (length(unidade)),border = NA,
+        main = "Unidade Orçamentaria por Grupo de Despesas"
+        , xlab = "Numero de despesas de cada Unidade")
+
+# Gráfico 2 (Pizza)
+pie(unidade[order(unidade, decreasing = T)], 
+    col= topo.colors(length(unidade)), border = NA)
+
+
+
+# Gráfico 3 (Barras)
+barplot(despesa[order(despesa)], horiz=TRUE, las=1, 
+        col=topo.colors (length(despesa)),border = NA,
+        main = "Grupo de despesas por unidade orcamentaria"
+        , xlab = "Numero de despesas de cada Unidade")
+
+#Gráfico 4 (Pizza)
+pie(despesa[order(despesa)], 
+    col= rainbow(length(despesa)), border = NA)
+
