@@ -2,9 +2,9 @@ require(dplyr)
 
 p_load(dplyr)
 
-orcamentaria <- tbl_df(read.csv("./dados/historica2018.csv"))
+orcamentaria <- tbl_df(read.csv("./dados/historica2018ascii.csv"))
 
-
+orcamentaria <- rename(orcamentaria, `Empenho2000`= `Empenhado_2000..R..milhoes.`)
 #Transformações 
 
 orcamentaria$Empenhado_2000..R..milhões. <- as.numeric(orcamentaria$Empenhado_2000..R..milhões.)
