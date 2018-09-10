@@ -1,14 +1,32 @@
+---
+title: "Relatório da Atividade sobre descrição dos dados"
+output: html_notebook
+---
+
+Variaveis numericas excluindo as variaveis categoricas do tipo Fator.
+
+
+```{r}
 require(pacman)
 require(dplyr)
 
-#Variaveis numericas excluindo as variaveis categoricas do tipo Fator.
+setwd("../")
+source("./dados/loadHistorica2018.R")
 
 summary(orcamentaria[,3:22])
 
+```
+
+
+Mostrando todos o resumo de todos os empenhos:
+
+```{r}
 boxplot(orcamentaria[,3:22], horizontal = T, las=1, notch = T,
         col = "lightblue", boxwex=0.5, whisklty = 1,
         outpch=16, outcol = "lightblue", stoplelty=0,
         ylim = c(0,90), xlab = "Orçamento")
+```
+
 
 
 #Transformando para Tabela marginais para fazer os 
