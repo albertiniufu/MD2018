@@ -20,7 +20,7 @@ cadastrocivil$UF_EXERCICIO <- as.character(cadastrocivil$UF_EXERCICIO)
 
 #transformar jornada para horas INT, para poder fazer média...
 
-cadastro <- read.csv2("/home/gudnunes/Área de Trabalho/Mineração de dados/MD2018/dados/cadastro.csv")
+cadastro <- read.csv2("/home/gudnunes/Área de Trabalho/Mineração de dados/MD2018/dados/cadastrocivil.csv")
 horario = rep(0, nrow(cadastro))
 i = 1
 for (aux in as.character(cadastro$JORNADA_DE_TRABALHO)) {

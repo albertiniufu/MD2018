@@ -2,15 +2,17 @@
 title: "Fuguras sobre os dados"
 author: "Bernardo"
 date: "3 de setembro de 2018"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 #Relação de salário com a jornada de trabalho em horas.
-#APESAR DE EXISTIR EXCEÇOES, PESSOAS COM DEDICAÇÃO ESCLUSIVA TEM A MÉDIA DE GANHO MAIOR.
 ```{r setup, include=FALSE}
-require(pacman)
 require(dplyr)
 require(readr)
+require(ggplot2)
+require(pacman)
 
 cadastro <- cadastrocivil
 
