@@ -199,7 +199,9 @@ mapping = aes(x = a, y = b), stat = "identity"
 
 
 
+# Atividade da aula 5
 
+Fazer figuras usando os dados do seu dataset com o `ggplot2` e `dplyr`
 
 
 

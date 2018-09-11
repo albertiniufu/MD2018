@@ -1,0 +1,96 @@
+---
+title: "Cadastro de Expulsões da Administração Federal"
+author: "Marcelo Kriiger"
+date: "11 de setembro de 2018"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+---
+Pacotes exigidos:
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+require(dplyr)
+require(ggplot2)
+library(readr)
+require(genderBR)
+```
+
+
+
+Existem 3 tipos de punições: Demissão, Cassação de Aposentadoria e Destituição de Cargo.
+
+```{r}
+expulsoes <- read.csv("/home/marcelokriiger/MD2018/dados/Expulsoes.csv", header = TRUE, sep = ";")
+expulsoes <- select(expulsoes, -c ("MATRICULA", "ORGAO.DE.LOTACAO","NUMERO.DE.PORTARIA.DE.PUNICAO", "PAGINA", "SECAO", "NUMERO.DO.PROCESSO.ADMINISTRATIVO"))
+expulsoes$CARGO.EFETIVO <- as.character(expulsoes$CARGO.EFETIVO)
+expulsoes$DATA.DE.PUBLICACAO.DA.PORTARIA.DE.PUNICAO<-lubridate::dmy(expulsoes$DATA.DE.PUBLICACAO.DA.PORTARIA.DE.PUNICAO)
+expulsoes$DATA.DE.PUBLICACAO.DA.PORTARIA.DE.PUNICAO <- format(expulsoes$DATA.DE.PUBLICACAO.DA.PORTARIA.DE.PUNICAO, format="%Y")
+attach(expulsoes)
+ggplot(data = expulsoes)+geom_bar(mapping = aes(x = TIPO.DE.PUNICAO, fill=TIPO.DE.PUNICAO))+theme(legend.position = 'top')
+
+```
+
+
+
+Gráfico com a quantidade de expulsões por estado:
+```{r}
+ggplot(data = expulsoes)+geom_bar(mapping = aes(x = UF.LOTACAO, fill= TIPO.DE.PUNICAO))+theme(legend.position = 'top')
+```
+
+Gráfico com a quantidade de expulsões e dos tipos de punições do ano de 2003 até 2018:
+```{r}
+ggplot(data = expulsoes)+geom_bar(mapping = aes(x = DATA.DE.PUBLICACAO.DA.PORTARIA.DE.PUNICAO, fill=TIPO.DE.PUNICAO))+theme(legend.position = 'top')
+```
+
+Pelo fato de haver dados que estão com os nomes como sigilosos, é preciso retirar eles para poder definir os gêneros. Além disso, foram retirados dados que não foram possíveis a identificação do gênero. No total, foram retirados 18,94% dos dados.
+
+Criando outro dataset e definindo os gêneros:
+```{r}
+expulsoes2 <- expulsoes %>% filter(NOME != "Sigiloso")
+expulsoes2 <- mutate(expulsoes2, GENERO=get_gender(expulsoes2$NOME))
+expulsoes2 <- expulsoes2 %>% filter(expulsoes2$GENERO != is.na(expulsoes2$GENERO))
+```
+
+
+Gráfico com a quantidade de expulsões em relação ao gênero:
+```{r message=FALSE, warning=FALSE}
+attach(expulsoes2)
+ggplot(data = expulsoes2)+geom_bar(mapping = aes( x = GENERO, fill=GENERO))
+```
+
+Grafico com os tipos de punições em relação ao gênero:
+```{r}
+attach(expulsoes2)
+ggplot(data = expulsoes2)+geom_bar(mapping = aes(x =TIPO.DE.PUNICAO , fill=GENERO))
+```
+
+
+Separando os cargos com o maior índice de expulsões: Agente Administrativo, Tecnico do Seguro Social e Auditor-Fiscal da Receita Federal
+```{r}
+cargosMaisExp <- expulsoes2 %>% select("CARGO.EFETIVO")
+cargosMaisExp <- expulsoes2 %>% select("GENERO","CARGO.EFETIVO", "TIPO.DE.PUNICAO")
+
+cargosMaisExp$CARGO.EFETIVO[cargosMaisExp$CARGO.EFETIVO == "Agente administrativo" | cargosMaisExp$CARGO.EFETIVO == "AGENTE ADMINISTRATIVO" | cargosMaisExp$CARGO.EFETIVO == "AGENTE ADMINISTRATIVA" | cargosMaisExp$CARGO.EFETIVO == "AGENTE ADMNISTRATIVA"] <- "Agente Administrativo"
+
+cargosMaisExp$CARGO.EFETIVO[cargosMaisExp$CARGO.EFETIVO == "TECNICO DO SEGURO SOCIAL" | cargosMaisExp$CARGO.EFETIVO == "Tecnica de Seguro Social" | cargosMaisExp$CARGO.EFETIVO == "Tecnica do Seguro Social" | cargosMaisExp$CARGO.EFETIVO == "TECNICA DO SEGURO SOCIAL"] <- "Tecnico do Seguro Social"
+
+cargosMaisExp$CARGO.EFETIVO[cargosMaisExp$CARGO.EFETIVO == "Auditor-Fiscal da Receita" | cargosMaisExp$CARGO.EFETIVO == "AUDITOR-FISCAL DA RECEITA FEDERAL" | cargosMaisExp$CARGO.EFETIVO == "AUDITOR-FISCAL DA RECEITA FEDERAL BRASIL" | cargosMaisExp$CARGO.EFETIVO == "Auditor-Fiscal da receita Federal do Brasil" | cargosMaisExp$CARGO.EFETIVO == "Auditor-Fiscal da Receita Federal do Brasil" | cargosMaisExp$CARGO.EFETIVO == "AUDITOR-FISCAL DA RECEITA FEDERAL DO BRASIL" | cargosMaisExp$CARGO.EFETIVO == "Auditor-Fiscal da ReceitaFederal do Brasil" | cargosMaisExp$CARGO.EFETIVO == "AUDITOR-FISCAL DA RECETA FEDERAL DO BRASIL" | cargosMaisExp$CARGO.EFETIVO == "Auditora-Fiscal da Receita Federal do Brasil" | cargosMaisExp$CARGO.EFETIVO == "AUDITOR FISCAL DA RECEITA FEDERAL DO BRASIL" | cargosMaisExp$CARGO.EFETIVO == "Auditor Fiscal da Receita Federal do Brasil" | cargosMaisExp$CARGO.EFETIVO == "AUDITOR FISCAL DA RECEITA FEDERAL" | cargosMaisExp$CARGO.EFETIVO == "Auditor Fiscal da Receita Federal" | cargosMaisExp$CARGO.EFETIVO == "AUDITOR FISCAL DA RECEITA"] <- "Auditor-Fiscal da Receita Federal"
+
+cargosMaisExp$CARGO.EFETIVO[cargosMaisExp$CARGO.EFETIVO == "Datilografa" | cargosMaisExp$CARGO.EFETIVO == "DATILOGRAFA" | cargosMaisExp$CARGO.EFETIVO == "DATILOGRAFO"] <- "Datilografo"
+
+cargosMaisExp$CARGO.EFETIVO[cargosMaisExp$CARGO.EFETIVO == "AUXILIAR DE ENFERMAGEM"] <- "Auxiliar de Enfermagem"
+
+cargosMaisExp$CARGO.EFETIVO[cargosMaisExp$CARGO.EFETIVO == "MEDICO" | cargosMaisExp$CARGO.EFETIVO == "Medica" | cargosMaisExp$CARGO.EFETIVO == "MEDICA" | cargosMaisExp$CARGO.EFETIVO == "Medico-Area" | cargosMaisExp$CARGO.EFETIVO == "MEDICO-AREA" | cargosMaisExp$CARGO.EFETIVO == "MEDICA NEONATOLOGISTA" | cargosMaisExp$CARGO.EFETIVO == "Medica Perita" | cargosMaisExp$CARGO.EFETIVO == "MEDICA PERITA PREVIDENCIARIA"] <- "Medico"
+
+cargosMaisExp$CARGO.EFETIVO[cargosMaisExp$CARGO.EFETIVO == "Agente de portaria" | cargosMaisExp$CARGO.EFETIVO == "AGENTE DE PORTARIA"] <- "Agente de Portaria"
+
+cargoTeste <- cargosMaisExp %>% filter(CARGO.EFETIVO == "Auditor-Fiscal da Receita Federal" | CARGO.EFETIVO == "Agente Administrativo" | CARGO.EFETIVO == "Tecnico do Seguro Social" | CARGO.EFETIVO == "Datilografo" | CARGO.EFETIVO == "Auxiliar de Enfermagem" | CARGO.EFETIVO == "Medico" | CARGO.EFETIVO == "Agente de Portaria")
+```
+
+
+Gráfico com os tipos de expulsões em relação com os cargos com mais expulsões:
+```{r}
+ggplot(data = cargoTeste)+geom_bar(mapping = aes(x = CARGO.EFETIVO, fill=TIPO.DE.PUNICAO))+theme(legend.position = 'top')+coord_flip()
+```
+
