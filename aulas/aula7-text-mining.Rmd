@@ -5,9 +5,6 @@ output: html_notebook
 ## Pacote para mineração de textos: quanteda
 
 
- VER TUTORIAL iconvlist()
-
-
 ```{r}
 require(pacman)
 p_load(readtext, tidyverse, quanteda)
@@ -16,7 +13,7 @@ colunas <- cols(docID = col_integer(),
      Opiniao = col_factor(NULL),
      Texto = col_character())
 
-textoDosTweets <- read_csv("~/md/datasets/sentiment_analysis/1000tweets.csv", col_types = colunas)
+textoDosTweets <- read_csv("http://www.facom.ufu.br/~albertini/1000tweets.csv", col_types = colunas)
 
 textoDosTweets$Texto <- tolower(textoDosTweets$Texto)
 #p_load(syuzhet)
