@@ -1,0 +1,18 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+require(readr)
+colunas <- cols_only("Objeto" = col_character())
+contratos <- read_csv("dados/contratos.csv", col_types =  colunas)
+
+require(quanteda)
+
+contratos.tokens <- tokens(contratos$Objeto)
+contratos.tokens <- tokens_tolower(contratos.tokens)
+contratos.tokens.dfm <- dfm(contratos.tokens, tolower = FALSE)
+contratos.tokens.tfidf <- tfidf(contratos.tokens.dfm)
+
+contratos.tokens.matrix <- as.matrix(teste)
+View(contratos.tokens.matrix)
