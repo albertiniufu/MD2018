@@ -45,7 +45,7 @@ Para carregar os dados no R, é costumeiro usar um script especializado em R nom
 
 ```{r}
 require(dplyr)
-cessoes <- tbl_df(read.csv("cessoes.csv"))
+cessoes <- tbl_df(read.csv("cessoes.csv")) # ou read_csv("cessoes.csv")
 ```
 
 Após a variável `cessoes` ser incluída no ambiente, é possível trabalhar com os dados para identificar o que será 

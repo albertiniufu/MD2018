@@ -1,0 +1,96 @@
+---
+title: "Aula sobre Classificação: Árvores de Decisão e Avaliação de Aprendizado"
+output: html_notebook
+---
+```{r}
+Sys.setenv(https_proxy="proxy.ufu.br:3128")
+require(pacman)
+p_load(caret, C50, e1071, Daim,pROC,timeROC,tree)
+```
+
+
+## Classificação
+
+Um dataset que está estruturado para um problema de classificação tem a seguinte forma:
+```{r}
+require(tidyverse)
+dataset <- tribble(~x1, ~x2,~x3,~y,
+                   0,0,0,1,
+                   0,0,1,0,
+                   0,1,0,1,
+                   0,1,1,1,
+                   1,0,0,0,
+                   1,0,1,1,
+                   1,1,0,0,
+                   1,1,1,0
+                   )
+dataset$y <- factor(dataset$y)
+```
+ 
+
+## Classificação dataset: Iris 
+ 
+Usando o pacote `rpart` pode-se obter uma árvore de decisão simples:
+ 
+```{r}
+p_load(rpart)
+
+rpart(Species ~ ., data = iris)
+#usar método predict para fazer a predição
+```
+
+O pacote `C50` também cria árvores, mas também permite visualização gráfica:
+
+```{r}
+p_load(C5.0())
+mod1 <- C5.0(Species ~ ., data = iris)
+plot(mod1)
+plot(mod1,subtree=4)
+```
+
+Além disso, o C5.50 tem a capacidade de fazer boosting, o significa que ele cria modelos adicionais com destaque (um *case weight* maior) para acertar os exemplos que foram errôneamente classificados anteriormente:
+```{r}
+modBoosting <-  C5.0(Species ~ ., data = iris, trials = 3)
+summary(modBoosting)
+```
+
+Levando a ideia de ter múltiplas árvores ao extremo temos os pacotes `randomForest`. Com esses pacotes podemos treinar múltiplas árvores distintas e usar a classe mais frequente para classificar novos exemplos. Essa técnica é chamada de bagging. Veja um exemplo:
+ 
+```{r}
+p_load(randomForest)
+modeloRF <- randomForest(Species ~ ., data = iris)
+confusionMatrix(predict(modeloRF, iris[,1:4]),iris[,5]) # lembrar que tem overfitting 
+```
+
+
+Também existem pacotes para random forests que usam de paralelismo como o `ParallelForest`:
+```{r}
+p_load(ParallelForest)
+```
+
+Uma das grandes vantagens de usar árvores é a interpretabilidade do modelo de classificação (embora, isso seja perdido em boosting e bagging).
+Para obter árvores que são mais simples podemos usar o pacote Fast and Frugal Decision Trees: FFTrees
+
+```{r}
+p_load(FFTrees)
+irisBin <- iris
+irisBin[,5] <- irisBin$Species == "virginica"
+FFTrees(Species ~ ., irisBin)
+#selection of cues
+# explicar curva ROC
+
+```
+
+ 
+## Outros pacotes relacionados à Classificação
+
+* tree: pacote de uso simples e direto (CART)
+* evtree: busca global para montar árvores
+* partykit: infraestrutura unificada para árvores, visualização, critério de parada estatístico
+* CORElearn: várias técnicas/algoritmos, paralelismo
+* varSelRF: seleção de atributos com random Forests
+* maptree: visualização, poda de árvores
+* REEMtree: “regression trees with random effects”
+* Cubist: regras de descisão com boosting
+* PROC, TimeROC: análise ROC
+
