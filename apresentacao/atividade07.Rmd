@@ -1,0 +1,158 @@
+---
+title: "Atividade 07"
+author: "Adriano Araújo"
+date: "September 19, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+require(pacman)
+require(tidyverse)
+
+atv07 <- read_csv2("/home/adriano/Documents/MD/CLSS-01/capes.csv")
+atv07 <- select(atv07,-c("AN_BASE",
+                       "CD_PROGRAMA",
+                       "NM_ENTIDADE_ENSINO",
+                       "ID_ADD_PRODUCAO_INTELECTUAL",
+                       "ID_PRODUCAO_INTELECTUAL",
+                       "ID_SUBTIPO_PRODUCAO",
+                       "ID_AREA_CONCENTRACAO",
+                       "ID_LINHA_PESQUISA",
+                       "ID_PROJETO",
+                       "DH_INICIO_AREA_CONC",
+                       "DH_FIM_AREA_CONC",
+                       "DH_INICIO_LINHA",
+                       "DH_FIM_LINHA",
+                       "DT_TITULACAO",
+                       "DS_KEYWORD",
+                       "ID_TP_EXPECTATIVA_ATUACAO",
+                       "ID_PESSOA_DISCENTE",
+                       "DT_MATRICULA",
+                       "ID_GRAU_ACADEMICO",
+                       "DS_CATEGORIA_ORIENTADOR",
+                       "NM_REGIAO",
+                       "NM_UF_IES",
+                       "CD_GRANDE_AREA_CONHECIMENTO",
+                       "CD_AREA_CONHECIMENTO",
+                       "CD_SUBAREA_CONHECIMENTO",
+                       "CD_ESPECIALIDADE",
+                       "NM_ESPECIALIDADE",
+                       "DS_EMAIL_DISCENTE",
+                       "NR_VOLUME",
+                       "DS_RESUMO",
+                       "DS_URL_TEXTO_COMPLETO",
+                       "ID_PESSOA_ORIENTADOR",
+                       
+                       "NM_PROGRAMA",
+                       "NM_PRODUCAO",
+                       "NM_SUBTIPO_PRODUCAO",
+                       "NM_PROJETO",
+                       "IN_TRABALHO_MESMA_AREA",
+                       "NM_TP_VINCULO",
+                       "IN_ORIENT_PARTICIPOU_BANCA",
+                       "DS_BIBLIOTECA_DEPOSITARIA",
+                       "NM_EXPECTATIVA_ATUACAO",
+                       "NM_DISCENTE",
+                       "NM_GRAU_ACADEMICO",
+                       "NM_CATEGORIA_DOCENTE",
+                       "SG_UF_IES",
+                       "NM_AREA_AVALIACAO",
+                       "NR_PAGINAS",
+                       "NM_IDIOMA",
+                       "NM_DISCENTE",
+                       "NM_PROJETO",
+                       
+                       "NM_AREA_CONCENTRACAO",
+                       "NM_LINHA_PESQUISA",
+                       "NM_SUBAREA_CONHECIMENTO",
+                       "DS_PALAVRA_CHAVE",
+                       
+                       "NM_ORIENTADOR",
+                       "NM_AREA_CONHECIMENTO"))
+
+glimpse(atv07)
+```
+
+```{r}
+#p_load(readtext,quanteda)
+
+#colunas <- cols(
+#    SG_ENTIDADE_ENSINO          = col_factor(NULL),
+#    DS_PALAVRA_CHAVE            = col_character(),
+#    DS_ABSTRACT                 = col_character(),
+#    NM_ORIENTADOR               = col_factor(NULL),
+#    NM_GRANDE_AREA_CONHECIMENTO = col_factor(NULL),
+#    NM_AREA_CONHECIMENTO        = col_factor(NULL)
+#)
+
+atv07$SG_ENTIDADE_ENSINO <- as.factor(atv07$SG_ENTIDADE_ENSINO)
+atv07$DS_ABSTRACT <- as.character(atv07$DS_ABSTRACT)
+atv07$NM_GRANDE_AREA_CONHECIMENTO <- as.factor(atv07$NM_GRANDE_AREA_CONHECIMENTO)
+
+atv07$DS_ABSTRACT <- tolower(atv07$DS_ABSTRACT)
+atv07 <- filter(atv07, SG_ENTIDADE_ENSINO == "UFMG")
+glimpse(atv07)
+```
+
+```{r}
+corpus07 <- corpus(atv07,text_field = "DS_ABSTRACT")
+summary(corpus07,5)
+```
+
+```{r}
+tokens07 <- tokens(corpus07,remove_punct = TRUE)
+tokens07 <- tokens_remove(tokens07,stopwords("en"))
+```
+```{r}
+indice <- dfm(tokens07) %>% dfm_trim(max_docfreq = 410,max_termfreq = 10)
+textstat_frequency(indice)
+
+area <- corpus07$documents$NM_GRANDE_AREA_CONHECIMENTO[ntoken(indice)>0]
+indice <- indice[ntoken(indice)>0,]
+
+indiceTFIDF <- dfm_tfidf(indice,scheme_df = "count",scheme_tf = "boolean")
+```
+
+```{r}
+matriz <- as.matrix(indiceTFIDF)
+cat("Dimensões número docs X número de palavras:", dim(matriz),"\n")
+cat("Exemplos de pesos de documentos:\n")
+print(matriz[1,1:20])
+```
+
+#Kernel Linear
+```{r}
+p_load(e1071,caret)
+
+treino <- createDataPartition(y=area,p=.5)$Resample1
+modelo <- svm(x=indiceTFIDF[treino],y=area[treino],kernel="linear")
+
+predicoes <- predict(modelo,indiceTFIDF[-treino])
+confusionMatrix(predicoes,area[-treino])
+```
+#Kernel Polynomial
+```{r}
+modelo <- svm(x=indiceTFIDF[treino],y=area[treino],kernel="polynomial")
+
+predicoes <- predict(modelo,indiceTFIDF[-treino])
+confusionMatrix(predicoes,area[-treino])
+```
+#Kernel Sigmoid
+```{r}
+modelo <- svm(x=indiceTFIDF[treino],y=area[treino],kernel="sigmoid")
+
+predicoes <- predict(modelo,indiceTFIDF[-treino])
+confusionMatrix(predicoes,area[-treino])
+```
+
+#Kernel Radial basis:
+```{r}
+modelo <- svm(x=indiceTFIDF[treino],y=area[treino],kernel="radial basis")
+
+predicoes <- predict(modelo,indiceTFIDF[-treino])
+confusionMatrix(predicoes,area[-treino])
+
+```
+
