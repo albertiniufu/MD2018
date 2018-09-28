@@ -176,13 +176,54 @@ $(document).ready(function () {
 
 
 <!-- rnb-text-begin -->
-<p>require(readr) colunas &lt;- cols_only(“Objeto” = col_character()) contratos &lt;- read_csv(“dados/contratos.csv”, col_types = colunas)</p>
-<p>require(quanteda)</p>
-<p>contratos.tokens &lt;- tokens(contratos$Objeto) contratos.tokens &lt;- tokens_tolower(contratos.tokens) contratos.tokens.dfm &lt;- dfm(contratos.tokens, tolower = FALSE) contratos.tokens.tfidf &lt;- tfidf(contratos.tokens.dfm)</p>
-<p>contratos.tokens.matrix &lt;- as.matrix(teste) View(contratos.tokens.matrix)</p>
+<div id="le-dados" class="section level1">
+<h1>Lê dados</h1>
+<p>require(readr) contratos &lt;- read_csv(“dados/contratos.csv”)</p>
+</div>
+<div id="gera-corpus-para-a-coluna-objeto" class="section level1">
+<h1>Gera corpus para a coluna Objeto</h1>
+<p>require(quanteda) corpus &lt;- corpus(contratos, text_field = “Objeto”)</p>
+</div>
+<div id="gera-tokens" class="section level1">
+<h1>Gera tokens</h1>
+<p>tokens &lt;- tokens_tolower(tokens(corpus))</p>
+</div>
+<div id="remove-stopwords" class="section level1">
+<h1>Remove stopwords</h1>
+<p>tokens &lt;- tokens_select(tokens, stopwords(‘pt’), selection = “remove”)</p>
+</div>
+<div id="gera-dfm" class="section level1">
+<h1>Gera dfm</h1>
+<p>dfm &lt;- dfm(tokens, tolower = FALSE, remove_punct = TRUE)</p>
+</div>
+<div id="gera-estatistica" class="section level1">
+<h1>Gera estatística</h1>
+<p>textstat &lt;- textstat_frequency(dfm, n = 6) head(textstat)</p>
+</div>
+<div id="gera-indice-tfidf" class="section level1">
+<h1>Gera indice TFIDF</h1>
+<p>indice_tfidf &lt;- dfm_tfidf(dfm) View(as.matrix(indice_tfidf)[1:5,1:10])</p>
+<p>require(caret) require(e1071)</p>
+</div>
+<div id="extrai-coluna-modalidade-da-licitacao" class="section level1">
+<h1>Extrai coluna Modalidade da Licitação</h1>
+<p>modalidades &lt;- data.matrix(contratos$‘Modalidade da Licitação’)</p>
+</div>
+<div id="converte-para-numerico" class="section level1">
+<h1>Converte para numérico</h1>
+<p>for (row in 1:nrow(modalidades)) { modalidades[row] &lt;- substring(modalidades[row], 1, 1); } modalidades &lt;- as.factor(modalidades);</p>
+</div>
+<div id="define-porcentagem-dos-dados-para-treino" class="section level1">
+<h1>Define porcentagem dos dados para treino</h1>
+<p>treino &lt;- createDataPartition(y=modalidades,p = .5)$Resample1</p>
+</div>
+<div id="executa-svm" class="section level1">
+<h1>Executa SVM</h1>
+<p>modelo &lt;- svm(x=indice_tfidf[treino], y=modalidades[treino]) predicoes &lt;- predict(modelo, indice_tfidf[-treino]) confusionMatrix(predicoes, modalidades[-treino])</p>
 <!-- rnb-text-end -->
+</div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKcmVxdWlyZShyZWFkcikKY29sdW5hcyA8LSBjb2xzX29ubHkoIk9iamV0byIgPSBjb2xfY2hhcmFjdGVyKCkpCmNvbnRyYXRvcyA8LSByZWFkX2NzdigiZGFkb3MvY29udHJhdG9zLmNzdiIsIGNvbF90eXBlcyA9ICBjb2x1bmFzKQoKcmVxdWlyZShxdWFudGVkYSkKCmNvbnRyYXRvcy50b2tlbnMgPC0gdG9rZW5zKGNvbnRyYXRvcyRPYmpldG8pCmNvbnRyYXRvcy50b2tlbnMgPC0gdG9rZW5zX3RvbG93ZXIoY29udHJhdG9zLnRva2VucykKY29udHJhdG9zLnRva2Vucy5kZm0gPC0gZGZtKGNvbnRyYXRvcy50b2tlbnMsIHRvbG93ZXIgPSBGQUxTRSkKY29udHJhdG9zLnRva2Vucy50ZmlkZiA8LSB0ZmlkZihjb250cmF0b3MudG9rZW5zLmRmbSkKCmNvbnRyYXRvcy50b2tlbnMubWF0cml4IDwtIGFzLm1hdHJpeCh0ZXN0ZSkKVmlldyhjb250cmF0b3MudG9rZW5zLm1hdHJpeCkK</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKI0zDqiBkYWRvcwpyZXF1aXJlKHJlYWRyKQpjb250cmF0b3MgPC0gcmVhZF9jc3YoImRhZG9zL2NvbnRyYXRvcy5jc3YiKQoKI0dlcmEgY29ycHVzIHBhcmEgYSBjb2x1bmEgT2JqZXRvCnJlcXVpcmUocXVhbnRlZGEpCmNvcnB1cyA8LSBjb3JwdXMoY29udHJhdG9zLCB0ZXh0X2ZpZWxkID0gIk9iamV0byIpCgojR2VyYSB0b2tlbnMKdG9rZW5zIDwtIHRva2Vuc190b2xvd2VyKHRva2Vucyhjb3JwdXMpKQoKI1JlbW92ZSBzdG9wd29yZHMKdG9rZW5zIDwtIHRva2Vuc19zZWxlY3QodG9rZW5zLCBzdG9wd29yZHMoJ3B0JyksIHNlbGVjdGlvbiA9ICJyZW1vdmUiKQoKI0dlcmEgZGZtCmRmbSA8LSBkZm0odG9rZW5zLCB0b2xvd2VyID0gRkFMU0UsIHJlbW92ZV9wdW5jdCA9IFRSVUUpCgojR2VyYSBlc3RhdMOtc3RpY2EKdGV4dHN0YXQgPC0gdGV4dHN0YXRfZnJlcXVlbmN5KGRmbSwgbiA9IDYpCmhlYWQodGV4dHN0YXQpCgojR2VyYSBpbmRpY2UgVEZJREYKaW5kaWNlX3RmaWRmIDwtIGRmbV90ZmlkZihkZm0pClZpZXcoYXMubWF0cml4KGluZGljZV90ZmlkZilbMTo1LDE6MTBdKQoKcmVxdWlyZShjYXJldCkKcmVxdWlyZShlMTA3MSkKCiNFeHRyYWkgY29sdW5hIE1vZGFsaWRhZGUgZGEgTGljaXRhw6fDo28KbW9kYWxpZGFkZXMgPC0gZGF0YS5tYXRyaXgoY29udHJhdG9zJCdNb2RhbGlkYWRlIGRhIExpY2l0YcOnw6NvJykKCiNDb252ZXJ0ZSBwYXJhIG51bcOpcmljbwpmb3IgKHJvdyBpbiAxOm5yb3cobW9kYWxpZGFkZXMpKSB7CiAgICBtb2RhbGlkYWRlc1tyb3ddIDwtIHN1YnN0cmluZyhtb2RhbGlkYWRlc1tyb3ddLCAxLCAxKTsKfQptb2RhbGlkYWRlcyA8LSBhcy5mYWN0b3IobW9kYWxpZGFkZXMpOwoKI0RlZmluZSBwb3JjZW50YWdlbSBkb3MgZGFkb3MgcGFyYSB0cmVpbm8KdHJlaW5vIDwtIGNyZWF0ZURhdGFQYXJ0aXRpb24oeT1tb2RhbGlkYWRlcyxwID0gLjUpJFJlc2FtcGxlMQoKI0V4ZWN1dGEgU1ZNCm1vZGVsbyA8LSBzdm0oeD1pbmRpY2VfdGZpZGZbdHJlaW5vXSwgeT1tb2RhbGlkYWRlc1t0cmVpbm9dKQpwcmVkaWNvZXMgPC0gcHJlZGljdChtb2RlbG8sIGluZGljZV90ZmlkZlstdHJlaW5vXSkKY29uZnVzaW9uTWF0cml4KHByZWRpY29lcywgbW9kYWxpZGFkZXNbLXRyZWlub10pCg==</div>
 
 
 
