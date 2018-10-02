@@ -200,5 +200,9 @@ p_load(RWeka)
 ```
 
 
+# Atividade da aula:
+Treinar e testar redes neurais para o problema de classificação individual.
+
+
 
 
