@@ -1,0 +1,35 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r, echo=FALSE, include=FALSE}
+require(dplyr)
+dados <- read.csv("../dados/dados.csv")
+dados <- tbl_df(dados)
+dados$customerID <- as.character(dados$customerID)
+```
+##Gráficos
+
+Clientes que cancelaram os serviços
+```{r, echo=FALSE}
+barplot(table(dados$Churn))
+
+```
+  
+Comparação do número de clientes seniors e não seniors que cancelaram os serviços
+```{r, echo=FALSE}
+tabela = table(dados$Churn,dados$SeniorCitizen)
+
+barplot(tabela, beside=TRUE, legend=rownames(tabela),names.arg = c("not senior", "senior"))
+
+```
+
+Pagamento total por metodo de pagamento
+```{r, echo=FALSE}
+subTable <- dados[c("TotalCharges","PaymentMethod")]
+total <- aggregate(TotalCharges ~ PaymentMethod, data=subTable, FUN=sum)
+
+```

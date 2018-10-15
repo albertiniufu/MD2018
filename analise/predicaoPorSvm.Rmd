@@ -1,0 +1,67 @@
+---
+title: "R Notebook"
+output:
+  word_document: default
+  pdf_document: default
+  html_notebook: default
+---
+#Testes de Kernel do SVM
+Neste documento são feitos testes dos diferentes kernels presentes na função svm do pacote e1071 para a construção de suport vector machines. A base de dados usada foi a Custumer Churn. Tirando o customerID, todos os atributos foram usados para classificar os indivíduos em relação ao campo Churn.
+
+##Preparação e separação do data set em subsets de treinamento e teste.
+Foi retirada as linhas em que o campo TotalCharges se encontrava como NA, ou seja, não haviam informações sobre o atributo. O dataset foi dividido em um subconjunto com 80% dos dados totais para treinamento, e um subconjunto de 20% dos dados para teste. 
+```{r}
+require(e1071)
+require(caret)
+DataSubset <- subset(dados,subset=TotalCharges>0,select = -customerID)
+DadosTreinamento <- createDataPartition(y = DataSubset$Churn,p = 0.8)
+Train <- DataSubset[DadosTreinamento$Resample1,]
+Test <- DataSubset[-DadosTreinamento$Resample1,]
+```
+##Kernel sigmoid do SVM
+
+```{r, echo=TRUE}
+
+preditor <- svm(Churn ~ ., data = Train,kernel="sigmoid")
+preditions <- predict(preditor,subset(Test,select = -Churn))
+confusionMatrix(preditions,subset(Test,select=Churn)$Churn)
+```
+##Kernel linear do SVM
+
+```{r}
+
+preditor <- svm(Churn ~ ., data = Train,kernel="linear")
+preditions <- predict(preditor,subset(Test,select = -Churn))
+confusionMatrix(preditions,subset(Test,select=Churn)$Churn)
+```
+##Kernel polynomial do SVM
+
+```{r}
+
+preditor <- svm(Churn ~ ., data = Train,kernel="polynomial")
+preditions <- predict(preditor,subset(Test,select = -Churn))
+confusionMatrix(preditions,subset(Test,select=Churn)$Churn)
+```
+##Kernel radial basis do SVM
+
+```{r}
+
+preditor <- svm(Churn ~ ., data = Train,kernel="radial")
+preditions <- predict(preditor,subset(Test,select = -Churn))
+confusionMatrix(preditions,subset(Test,select=Churn)$Churn)
+```
+
+##Resultados
+
+Em relação ao atributo kappa de cada kernel:
+
+Sigmoid: 0.4459
+
+Linear: 0.4662
+
+Polynomial: 0.3882
+
+Radial basis: 0.4501
+
+Em relação a este atributo, o kernel Linear é a melhor opção para uma SVM.
+
