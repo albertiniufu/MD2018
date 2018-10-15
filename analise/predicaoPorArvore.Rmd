@@ -1,0 +1,43 @@
+---
+title: "predicaoPorArvore"
+author: "Tiago Pereira de Faria"
+date: "15 de outubro de 2018"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Predição por Árvore de Decisão
+
+```{r dados, include=FALSE}
+require(pacman)
+p_load(caret,C50,e1071,Daim,pROC,timeROC,tree)
+p_load(C5.0())
+```
+
+##Árvore de decisão simples 
+```{r DataSubset, echo=FALSE}
+mod1 <- C5.0(Churn ~ .,data = DataSubset)
+plot(mod1)
+plot(mod1,subtree = 4)
+```
+
+##Usando Boosting
+Esse método cria modelos adicionais para acertar os exemplos que foram classificados erroneamente na árvore anterior
+
+```{r }
+modBoosting <- C5.0(Churn ~ ., data = DataSubset, trials = 3)
+summary(modBoosting)
+```
+
+##Random Forest
+```{r}
+p_load(randomForest)
+modeloRF <- randomForest(Churn ~ ., data=DataSubset)
+confusionMatrix(predict(modeloRF,DataSubset[,1:19]),DataSubset[20]$Churn)
+```
+
+A acuracia foi de 0.9788
