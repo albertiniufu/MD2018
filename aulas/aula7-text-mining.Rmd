@@ -1,0 +1,149 @@
+---
+title: "Aula 7: Mineração de Textos"
+output: html_notebook
+---
+## Pacote para mineração de textos: quanteda
+
+
+```{r}
+require(pacman)
+p_load(readtext, tidyverse, quanteda)
+
+colunas <- cols(docID = col_integer(),
+     Opiniao = col_factor(NULL),
+     Texto = col_character())
+
+textoDosTweets <- read_csv("http://www.facom.ufu.br/~albertini/1000tweets.csv", col_types = colunas)
+
+textoDosTweets$Texto <- tolower(textoDosTweets$Texto)
+#p_load(syuzhet)
+#textoDosTweets$Sentiment <- unlist(lapply(textoDosTweets$Texto,get_sentiment))
+
+```
+
+Três estruturas principais implementam conceitos importantes para mineração de textos: corpus, tokens e Document-feature matrix (DFM).
+Uma estrutura  `corpus` representa um conjunto de documentos disponíveis para mineração. A estrutura `tokens` implementa operações eficientes em substrings que caracterizam termos de interesse em documentos. A estrutura Document-Feature Matrix (DFM) é uma estrutura de dados que armazena eficientemente quais palavras se repetem por documento, sem guardar outras informações. A DFM permite implementar análises do tipo Bag-of-Words, na qual a posição das palavras no documento não é considerada. Também é possível fazer análise posicional, que é do tipo String-of-Words.
+
+Para criar um `corpus` fazemos:
+
+```{r}
+tweets <- corpus(textoDosTweets, docid_field = "docID", text_field = "Texto")
+summary(tweets, 5)
+```
+
+Podemos visualizar o uso de uma palavra de acordo com o contexto:
+
+```{r}
+kwic(tokens(tweets),'bad')
+```
+
+
+Podemos separar os documentos com opinião "0" em que aparece o token "bad":
+
+```{r}
+
+tweets0 <- corpus_subset(tweets,Opiniao == 0)
+tweets1 <- corpus_subset(tweets,Opiniao == 1)
+
+kwic(tokens(tweets0),'bad')
+kwic(tokens(tweets1),'bad')
+
+```
+
+Para fazer mineração de dados é comum remover palavras que são muito comuns e pouco contribuem com o significado de sentenças. Essas palavras são stopwords.
+
+```{r}
+sample(stopwords("en"),10)
+```
+
+Essas palavras são removidas do conjunto de tokens encontrados nos documentos do corpus para construção do vocabulário:
+```{r}
+tokensDosTweets <- tokens(tweets, remove_punct = TRUE)
+
+# padding = TRUE serve para manter 
+#tokensDosTweets <- tokens_remove(tokensDosTweets, stopwords('en'), padding=TRUE)
+#tokensDosTweets <- tokens_ngrams(tokensDosTweets, 2)
+```
+
+A próxima etapa é construir um índice que representa uma matriz esparsa:
+```{r}
+indice <- dfm(tokensDosTweets, remove = c("http","quot","amp","gt","just","lt","bit.ly","tinyurl.com","tr.im",stopwords("en"))) %>% dfm_trim(min_docfreq = 2) # usar textstat_frequency
+opiniao <- tweets$documents$Opiniao[ntoken(indice)>0]
+indice <- indice[ntoken(indice)>0,]
+
+
+indiceTFIDF <- dfm_tfidf(indice, scheme_tf = "boolean", scheme_df = "count")
+```
+
+É possível visualizar como uma matriz:
+```{r}
+matriz <- as.matrix(indiceTFIDF)
+cat("Dimensões número docs X número de palavras:", dim(matriz),"\n")
+cat("Exemplos de pesos de documentos:\n")
+print(matriz[1,1:20])
+```
+
+
+Após a obtenção do índice e das representações TF-IDF dos documentos, é possível aplicar técnicas de classificação:
+
+```{r}
+p_load(e1071,caret) # pacote que implementa uma SVM
+
+train <- createDataPartition(opiniao)$Resample1
+
+tunandoSVM <- tune(svm, train.x = indice[train], 
+                        train.y = opiniao[train], 
+                        kernel="linear", 
+                        ranges=list(cost=10^(-5:5), gamma=2^(-5:5)) )
+summary(tunandoSVM)
+modeloSVM <- tunandoSVM$best.model
+```
+
+Agora devemos preparar o teste obtido pela SVM:
+
+```{r}
+p_load(caret) # para usar a funcao confusionMatrix
+
+# aplicar modelo SVM
+predicoesSVM <- predict(modeloSVM, newdata = indice[-train])
+
+# computar medida de qualidade do resultado
+confusionMatrix(predicoesSVM, opiniao[-train])
+```
+
+Outra opção são modelos probabilísticos:
+
+```{r}
+modeloBayes <- textmodel_nb(x=indice[train],y = opiniao[train],prior = "docfreq")
+# aplicar modelo SVM
+predicoesBayes <- predict(modeloBayes, newdata = indice[-train])
+
+# computar medida de qualidade do resultado
+confusionMatrix(predicoesBayes, opiniao[-train])
+```
+
+## Extração de tópicos: Latent Dirichlet Allocation (LDA)
+
+```{r}
+p_load(topicmodels)
+indice_lda<-convert(indice,to="topicmodels")
+lda <- LDA(indice,k=5)
+get_terms(lda,10)
+```
+
+
+## Outros pacotes importantes para mineração de textos:
+
+* `spacyr` para etiquetagem sintática-morfológica, reconhecimento de entidades e parsing de dependências 
+* K-Nearest-Neighbors (`class`), 
+* Naive Bayes e SVM (`e1071`) 
+* Classificador baseado em árvore de decisão (`rpart` and `C50`), 
+* Outro pacote para mineração de textos `tidyr`: https://www.tidytextmining.com/tidytext.html
+* Processamento linguístico `NLP`, `cleanNLP`, `openNLP`
+* Tratamento de features para text mining `TM`0
+* Análise de sentimentos `syuzhet`
+* Testes estatísticos: vcd, vcdExtra 
+* Visualização: ggplot2 (mosaic plot)
+* Coleta de documentos web: `rvest`
+
+

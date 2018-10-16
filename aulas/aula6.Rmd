@@ -1,0 +1,64 @@
+---
+title: "Aula 6 - Mineração de Dados"
+output: html_notebook
+---
+
+## Explorando diferenças salariais 
+
+
+Vamos obter os salarios:
+
+```{r}
+require(tidyverse)
+
+colunasDoCadastro <- cols_only("Id_SERVIDOR_PORTAL" = col_integer(),
+                               "NOME" = col_character())
+
+cadastro <- read_csv2("cadastro.csv", 
+                      col_types =  colunasDoCadastro)
+
+sample_n(cadastro,size=10)
+
+```
+
+O pacote stringr pode ser util para obter o primeiro nome:
+
+```{r}
+require(stringr)
+require(dplyr)
+require(genderBR)
+
+#cadastro <- sample_n(cadastro,size=10000)
+cadastro <- mutate(cadastro, NOME1=str_match(NOME,"^[A-Z]*"))
+cadastro <- mutate(cadastro, ULTCHAR=str_match(NOME1,"[A-Z]$"))
+cadastro$SEXO <- get_gender(as.list(cadastro$NOME1))
+
+cadastro <- distinct(cadastro)
+
+```
+
+
+Usando SVM = Support Vector Machine
+
+```{r}
+require(e1071)
+
+cadastro$ULTCHAR <- as.factor(cadastro$ULTCHAR)
+cadastro$SEXO <- as.factor(cadastro$SEXO)
+
+validacao <- filter(cadastro, is.na(SEXO))
+treino <- filter(cadastro, is.na(SEXO)==F) %>% sample_n(size=5000)
+
+classificador <- svm(SEXO ~ ULTCHAR, treino, type="C")
+
+validacao$SEXO <- predict(classificador, newdata=select(validacao,-SEXO))
+
+treino$PREDICAO <- predict(classificador, newdata=select(treino,-SEXO))
+```
+
+# Atividade de aula
+
+Montar apresentação com 5 slides sobre possíveis problemas de classificação ou regressão no conjunto de dados atribuído em aula.
+
+
+

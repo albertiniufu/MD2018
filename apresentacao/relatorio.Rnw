@@ -1,0 +1,1 @@
+#arquivo que vai conter LaTeX do relatorio que usa arquivos de análise

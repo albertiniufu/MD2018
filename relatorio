@@ -1,0 +1,3 @@
+Base em formato CSV.
+
+A base apresenta dados de contratos do Ministério da Defesa desde o ano de  1998. Cada linha da tabela se refere a um contrato feito pelo Ministério, e apresenta dados como data, modalidade da licitação, custo associado, código e descrição do contrato.
