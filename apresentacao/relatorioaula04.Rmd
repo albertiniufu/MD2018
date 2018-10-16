@@ -1,0 +1,26 @@
+---
+title: "R Notebook"
+output: html_notebook
+author: Diogo Canut F. P.
+---
+
+Analise dos dados
+```{R}
+str(cssv)
+```
+
+Boxplot do id do orgão das proposições em 2018.
+```{R}
+boxplot(cssv$ultimoStatus_idOrgao)
+```
+
+Summary do id das proposições em 2018
+```{R}
+summary(cssv$id)
+```
+
+```{R}
+x <- select(cssv, "id", "ementa")
+y <- table(x)
+margin.table(y,1)
+```
