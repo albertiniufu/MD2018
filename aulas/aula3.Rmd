@@ -1,0 +1,112 @@
+---
+title: "Mineração de Dados - Notas da Aula 3"
+author: "Prof. Marcelo Keese Albertini, Universidade Federal de Uberlândia"
+output: html_notebook
+---
+
+Na aula passada aprendemos como estruturar os arquivos de um projeto para capturar, pré-processar e carregar de forma organizada fontes de dados em `data.frame` e `tibble` e inspecionar com a função `dplyr::glimpse()`.
+
+Nesta aula testamos outros tipos de dados: `vector`, `matrix`, `array`, `factor`, `ordered`, `list`, `environment` e `Date`.
+
+Conhecer esses tipos de dados básicos é importante para manipular dados.
+
+Várias funções são úteis para inspecionar variáveis que contém dados: `typeof()`, `mode()`, `str()`, `class()` e `attributes()`.
+
+O tipo de dados `vector` é o mais simples e pode guardar só um tipo de dado por vez:
+```{r}
+meuVector <- c(1,2,3) #a função c() cria um novo vetor
+print(meuVector)
+print(c(1,2,"c")) # converte 1 e 2 para character
+```
+
+A função `typeof()` identifica qual o tipo do dados armazenado em uma variável. Os tipos mais comuns são:
+`logical`, `integer`, `double`, `complex`, `character`, `raw` and `list`, `NULL` e `closure`, que é o tipo das funções.
+
+```{r}
+typeof(c(T,F))
+typeof(c(1,2,3))
+typeof(c(3.1415i,1,2)) # imaginários
+typeof(c("a","b"))
+typeof(matrix(0,4,4))
+data(cars); typeof(cars)
+```
+
+Para alterar o tipo é possível usar a função `mode()`:
+```{r}
+meuVector <- c(1,2,3) #a função c() cria um novo vetor
+mode(meuVector)
+mode(meuVector) <- "character"
+```
+
+Mudar o tipo do dado armazenado em uma variável para `novoTipo` só é possível se existe uma função adequada para fazer a conversão na forma `as.novoTipo()`. No vocabulário do R, o "tipo" de uma variável é seu `mode`.
+
+Outra forma de inspecionar variáveis é utilizar a função `str`, que mostra de modo compacto a estrutura interna de um objeto no R.
+
+```{r}
+cat("Inspecionando vector de booleanos: ")
+?str(c(T,F))
+cat("Inspecionando vector de numéricos: ")
+str(c(1,2,3))
+
+data(cars) # carrega dataset pré-armazenado no R
+cat("Inspecionando um data.frame: ")
+str(cars)
+```
+
+No dataset da aula 2, `cessoes`, alguns tipos de dados de `variables` (variáveis) do `data.frame` podem ser transformados para adequação para posterior análise.
+
+```{r}
+require(dplyr)
+cessoes <- tbl_df(read.csv("cessoes.csv"))
+glimpse(cessoes)
+```
+
+É possível acessar diretamente a coluna de um `data.frame` se usarmos a função `attach()`:
+
+```{r}
+attach(cessoes)
+str(Situacao)
+```
+
+Um exempo é a coluna `Data.da.Cessao` cujo tipo de dado pode ser transformado em `Date` da seguinte forma:
+
+```{r}
+class(cessoes$Data.da.Cessao)
+cessoes$Data.da.Cessao = as.Date(as.character(Data.da.Cessao),"%d/%m/%Y")
+class(cessoes$Data.da.Cessao)
+```
+
+Quando o conteúdo de uma coluna de um arquivo `.csv` é textual, a função `read.csv` pode atribuir o tipo `factor` no `data.frame` criado. 
+
+Um `factor` é um tipo para variáveis categóricas
+Para verificar quantos tipos `length(levels(Titular))`
+
+```{r}
+length(levels(Titular))
+```
+
+Um `factor` com apenas um `level` tem utilidade limitada. Vamos removê-lo:
+
+```{r}
+# tem 11 colunas
+ncol(cessoes) 
+# removendo factor com 1 só level
+cessoes$Situacao <- c()
+# agora tem 10 colunas
+ncol(cessoes) #
+```
+
+No R também existe o tipo `ordered` que serve para declarar variáveis categóricas ordinais (que pode ser usada para representar notas baseadas em conceitos A > B > C > D > E > F). Observe que todo `ordered` também é a classe `factor`:
+
+```{r}
+notas <- ordered(c(1,2,3),labels=c("F","E","D","C","B","A"),levels=c(1,2,3,4,5,6))
+print(notas)
+print(class(notas))
+
+notas <- factor(x = c(6,4,4,5,1),labels=c("A","B","C","D","E","F"),levels=c(6,5,4,3,2,1),ordered=TRUE)
+print(class(notas))
+```
+
+
+
+

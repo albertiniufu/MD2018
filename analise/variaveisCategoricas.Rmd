@@ -1,0 +1,21 @@
+
+# Criando variaveis categoricas
+
+```{r}
+UF <- select(expulsoes, "UF.LOTACAO")
+str(UF)
+
+tbUF <- table(UF)
+str(tbUF)
+print(tbUF)
+```
+
+```{r}
+Punicoes <- select(expulsoes, "TIPO.DE.PUNICAO")
+str(Punicoes)
+
+TBPunicoes <- table(Punicoes)
+str(TBPunicoes)
+print(TBPunicoes)
+```
+

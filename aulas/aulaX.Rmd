@@ -1,0 +1,104 @@
+---
+title: "Aula 6 - Mineração de dados"
+output: html_notebook
+---
+
+```{r}
+Sys.setenv(https_proxy="proxy.ufu.br:3128")
+require(pacman)
+p_load(tidyverse)
+```
+
+Podemos criar tabela por colunas:
+
+```{r}
+tab <- tibble (colunaA = 1:5, colunaB=10:14)
+```
+
+ou por linhas
+
+```{r}
+tab <- tribble(~colunaA, ~colunaB,
+               1,10,
+               2,11,
+               3,12,
+               4,13,
+               5,14
+               )
+```
+
+
+Ao ler um arquivo podemos configurar o `read_csv` para ler e converter apenas algumas colunas:
+
+```{r}
+
+
+colunasDoCadastro = cols_only("Id_SERVIDOR_PORTAL"=col_character(), 
+                              "NOME"=col_character(),
+                   "DESCRICAO_CARGO"=col_factor(NULL),
+                   "UF_EXERCICIO"=col_factor(NULL),
+                   "DATA_INGRESSO_ORGAO"=col_date(format="%d/%m/%Y"))
+
+suppressWarnings(cadastro <- read_csv2("cadastro.csv", col_types = colunasDoCadastro,
+                                       col_names = T, progress=F))
+
+hoje <- Sys.Date()
+
+cadastro <- mutate(cadastro, ANOS.SERVICO = as.double(difftime(hoje,DATA_INGRESSO_ORGAO,units="weeks")/52.25))
+
+colunasDaRemuneracao <- cols_only("REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)" = col_double(),
+                                  "Id_SERVIDOR_PORTAL" = col_character())
+
+suppressWarnings(remuneracao <- read_csv2("remuneracao.csv", col_types = colunasDaRemuneracao, 
+                                           progress=F))
+p_load(genderBR)
+cadastro<- mutate(cadastro,GENERO=get_gender(NOME))
+
+cadastro <- left_join(x=cadastro, y=remuneracao)
+
+cadastro <- rename(cadastro, REMUNERACAO=`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)`)
+
+```
+
+# Qual é o salário médio das 10 profissões mais comuns?
+```{r}
+profissoesMaisComuns <- names(tail(sort(table(cadastro$DESCRICAO_CARGO)),10))
+
+cadastrosMaisComuns <- filter(cadastro, DESCRICAO_CARGO %in% profissoesMaisComuns)
+
+cadastro %>% group_by(DESCRICAO_CARGO) %>% 
+                summarise(REMUN.MEDIANA=median(REMUNERACAO,na.rm=T),
+                          DP = sd(REMUNERACAO,na.rm=T),
+                          min = min(REMUNERACAO,na.rm=T),
+                          max= max(REMUNERACAO,na.rm=T),
+                          contagem=n()) %>% arrange(desc(REMUN.MEDIANA))
+```
+
+```{r}
+ggplot(data=filter(cadastro,DESCRICAO_CARGO=="PROFESSOR DO MAGISTERIO SUPERIOR"))+geom_smooth(mapping=aes(x=ANOS.SERVICO,y=REMUNERACAO,color=GENERO))
+```
+
+
+```{r}
+# obter média por ano por genero
+cadastro %>% filter(REMUNERACAO >0) %>% filter(is.na(GENERO)==FALSE) %>% 
+  ggplot(aes(x=ANOS.SERVICO,y=REMUNERACAO,color=GENERO))+ geom_quantile()
+```
+
+```{r}
+# obter média por ano por genero
+cadastro %>% filter(REMUNERACAO >0) %>% filter(is.na(GENERO)==FALSE) %>% 
+  ggplot(aes(x=ANOS.SERVICO,y=REMUNERACAO,color=GENERO))+ geom_smooth(method="lm")
+```
+
+
+
+```{r}
+# obter média por ano por genero
+cadastro %>% filter(is.na(GENERO)==F,DESCRICAO_CARGO=="PROFESSOR DO MAGISTERIO SUPERIOR") %>% 
+  ggplot(aes(x=ANOS.SERVICO,y=REMUNERACAO))+ geom_point(size=.1,alpha=.5) 
+```
+join com remuneracao,
+Queremos transformar salario em ordered factor , resumir relacao do tempo de serviço medio para determinado salario
+
+

@@ -1,0 +1,130 @@
+
+---
+title: "Aula 4"
+author: "Marcelo Albertini"
+output: html_notebook
+---
+
+# Configuração de um ambiente
+
+
+Podemos configurar variáveis de ambiente, globalmente, usando a função `options()`:
+
+```{r}
+Sys.setenv(https_proxy="proxy.ufu.br:3128")
+require(pacman)
+
+# Quais opções estão disponíveis?
+head(names(options()))
+
+# para ativar mode de debugging:
+options(error=recover)
+
+#mudando numero de digitos
+print(pi)
+options(digits=3)
+print(pi)
+
+```
+
+## Tipo de dados: table
+
+O tipo `table` representa tabelas de contingência que são usadas para fazer contagens entre variáveis categóricas.
+
+Por exemplo, para verificar qual área tem mais grupos de pesquisa consolidados fazemos:
+
+```{r}
+source("dados/loadGruposDePesquisa.R")
+p_load(dplyr)
+
+consolidacaoGrupos <- select(gruposDePesquisa,"area_conhecimento_cnpq","situacao")
+str(consolidacaoGrupos)
+
+tabelaContigencia <- table(consolidacaoGrupos)
+str(tabelaContigencia)
+print(head(tabelaContigencia)) # head serve para pegar só as primeiras linhas da tabela
+```
+
+O tipo `table` é diferente do `data.frame` pois é especializado em contagens.
+Por exemplo, podemos obter tabelas de contingência marginais a partir da segunda variável `situacao` para saber a contagem de grupos de pesquisa consolidados e não consolidados:
+
+```{r}
+margin.table(tabelaContigencia,2)
+```
+
+Também é possível obter a informação de quantos grupos de pesquisa tem em cada área e ao todo:
+```{r}
+#por area
+head(margin.table(tabelaContigencia,1))
+
+# ao todo
+margin.table(tabelaContigencia)
+```
+
+
+Caso seja necessário, é possível converter uma `table` de contingência em um `data.frame`  usando a função `as.data.frame.matrix()`:
+
+```{r}
+dfConsolidacao <- as.data.frame.matrix(tabelaContigencia) 
+str(dfConsolidacao)
+
+# Conversao para forma de 1 pessoa por linha
+as.data.frame.table(UCBAdmissions)
+
+```
+
+
+## Extra: data.table
+```{r}
+
+# pacote para tratar xlsx
+p_load(xlsx)
+
+# json
+p_load(jsonlite)
+
+# bancos de dados relacionais: DBI + pacote especifico do SGBD
+p_load(DBI)
+p_load(RSQLite)
+
+# pacote especial para big data
+p_load(data.table) 
+
+# pacote especial para arquivos .sav (SAS, SPSS)
+p_load(foreign) # read.spss
+```
+
+## Fazendo pré-análises para compreensão dos dados
+```{r}
+str(cars)
+
+# comando para verificar propriedades iniciais dos dados
+summary(cars$speed)
+
+# usar summary para atributos numericos
+summary(cars)
+```
+
+Inspeção visual da dispersão por dimensão
+
+```{r}
+boxplot(cars$speed,horizontal = T)
+rug(cars$speed)
+```
+
+## Como mostrar uma figura sem mostrar o código:
+```{r echo=FALSE}
+plot(cars)
+```
+
+
+## Atividade desta aula:
+
+* selecionar variáveis numéricas e fazer summary e boxplot
+* selecionar variáveis categóricas e fazer tabelas marginais `table`
+* incluir essas pré-analises no diretorio de analise em arquivos .Rmd
+* pull request
+
+
+
+
