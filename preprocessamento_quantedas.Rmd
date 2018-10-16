@@ -1,0 +1,49 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#Lê dados
+require(readr)
+contratos <- read_csv("dados/contratos.csv")
+
+#Gera corpus para a coluna Objeto
+require(quanteda)
+corpus <- corpus(contratos, text_field = "Objeto")
+
+#Gera tokens
+tokens <- tokens_tolower(tokens(corpus))
+
+#Remove stopwords
+tokens <- tokens_select(tokens, stopwords('pt'), selection = "remove")
+
+#Gera dfm
+dfm <- dfm(tokens, tolower = FALSE, remove_punct = TRUE)
+
+#Gera estatística
+textstat <- textstat_frequency(dfm, n = 6)
+head(textstat)
+
+#Gera indice TFIDF
+indice_tfidf <- dfm_tfidf(dfm)
+View(as.matrix(indice_tfidf)[1:5,1:10])
+
+require(caret)
+require(e1071)
+
+#Extrai coluna Modalidade da Licitação
+modalidades <- data.matrix(contratos$'Modalidade da Licitação')
+
+#Converte para numérico
+for (row in 1:nrow(modalidades)) {
+    modalidades[row] <- substring(modalidades[row], 1, 1);
+}
+modalidades <- as.factor(modalidades);
+
+#Define porcentagem dos dados para treino
+treino <- createDataPartition(y=modalidades,p = .5)$Resample1
+
+#Executa SVM
+modelo <- svm(x=indice_tfidf[treino], y=modalidades[treino])
+predicoes <- predict(modelo, indice_tfidf[-treino])
+confusionMatrix(predicoes, modalidades[-treino])

@@ -1,0 +1,38 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#Lê dados
+require(readr);
+contratos <- read_csv("dados/contratos.csv");
+
+#Extrai coluna Valor inicial
+valores <- data.matrix(contratos$'Valor inicial');
+
+#Converte para numérico
+valores <- sub('R$', '', as.character(valores), fixed=TRUE);
+valores <- gsub(',', '', as.character(valores), fixed=TRUE);
+valores <- as.numeric(valores);
+valores[is.na(valores)] <- 0
+
+#Extrai coluna Modalidade da Licitação
+modalidades <- data.matrix(contratos$'Modalidade da Licitação')
+
+#Converte para numérico
+for (row in 1:nrow(modalidades)) {
+    modalidades[row] <- substring(modalidades[row], 1, 1);
+}
+modalidades <- as.numeric(modalidades);
+
+#Treina rede para predizer a modalidade com base no valor
+require(freestats);
+set.seed(1);
+S <- as.data.frame(valores)
+S$bias <- 1
+r <- perceptrain(S = S,
+                 y = modalidades,
+                 alpha_k = 1,
+                 endcost = 100000);
+                 
+r$Z_history

@@ -1,0 +1,42 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#carrega arquivo
+require(readr)
+#colunas <- cols_only("Objeto" = col_character())
+#contratos <- read_csv("dados/contratos.csv", col_types =  colunas)
+contratos <- read_csv("dados/contratos.csv")
+
+#define stopwords
+library(stopwords)
+stopwords_regex = paste(stopwords('pt'), collapse = '\\b|\\b')
+stopwords_regex = paste0('\\b', stopwords_regex, '\\b')
+
+texto <- c()
+
+#remove stopwords do dados
+for (row in 1:nrow(contratos)) {
+    objeto <- contratos[row, "Objeto"]
+    objeto = stringr::str_replace_all(objeto, stopwords_regex, '')
+    contratos[row, "Objeto"] = objeto
+    texto <- paste(texto, objeto)
+}
+
+#define stopwords
+custom = c("defesa", "especializada", "central", "corretiva", "pa", "s", "preventiva", "ra", "d", "especializados", "uso", "ministério", "p")
+custom = paste(custom, collapse = '\\b|\\b')
+custom = paste0('\\b', custom, '\\b')
+
+#remove stopwords do dados
+for (row in 1:nrow(contratos)) {
+    objeto <- contratos[row, "Objeto"]
+    objeto = stringr::str_replace_all(tolower(objeto), custom, '')
+    contratos[row, "Objeto"] = objeto
+    texto <- paste(texto, objeto)
+}
+
+require(qdap)
+term_count <- freq_terms(texto, 25)
+plot(term_count)
