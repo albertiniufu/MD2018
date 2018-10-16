@@ -1,15 +1,1 @@
-\documentclass{article}
-\usepackage[portuguese]{babel}
-\usepackage[utf8]{inputenc}
-\pagenumbering{gobble}
-
-\begin{document}
-
-O arquivo contém dados de todas as despesas, de todos os deputados, cobertas pela Cota para Exercício da Atividade Parlamentar no ano de 2017. Não acompanha dicionário.
-
-<<>>=
-source("../dados/loadData.R")
-glimpse(despesas)
-@
-
-\end{document}
+#arquivo que vai conter LaTeX do relatorio que usa arquivos de análise

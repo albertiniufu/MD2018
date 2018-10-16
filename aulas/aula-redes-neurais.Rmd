@@ -1,0 +1,208 @@
+---
+title: "Aula: redes neurais"
+output: html_notebook
+---
+
+```{r}
+require(pacman)
+p_load(freestats)
+
+set.seed(1)
+z <- runif(n=3)          # gera vetor separador de 2 classes
+d <- fakedata(w=z,n=100) # gera dados respeitando z
+plot(d$S[,1], d$S[,2], col=d$y+3)
+
+r <- perceptrain(S       = d$S,    # dados de entrada com bias
+                 y       = d$y,    # dados esperados
+                 alpha_k = .001,   # parametro de treino
+                 endcost = 0)      # criterio de parada
+
+t = rep(0,nrow(d$S))
+for (i in 1:nrow(d$S)) {
+   t[i] = r$z %*% d$S[i,] # ativacao do neuronio
+} 
+# equivale a
+#t <- as.vector(sign(r$z %*%t(d$S)))
+
+plot(d$S[,1], d$S[,2], col=d$y+3, pch=((t>0)+2))
+```
+
+O código do treino do perceptron é:
+
+```{r}
+perceptrain
+```
+
+
+## Pacote `neural` 
+
+Implementação de uma Multi-layer perceptron
+```{r}
+p_load(neural)
+set.seed(1)
+redeTreinada3x3 <- mlptrain(inp     = d$S[,1:2], 
+                            neurons = c(3,3), 
+                            out     = as.matrix(d$y), 
+                            visual  = F, 
+                            it      = 3000)
+
+saidas3x3 <- mlp(d$S[,1:2], weight  = redeTreinada3x3$weight, 
+                            dist    = redeTreinada3x3$dist, 
+                            neurons = redeTreinada3x3$neurons, 
+                            actfns  = redeTreinada3x3$actfns)
+``` 
+
+Podemos visualizar como ficou a classificação:
+```{r}
+dados <- data.frame(inp = d$S[,1:2], 
+                    y   = as.factor(ifelse(d$y<0,0,1)), 
+                    t   = as.factor(ifelse(saidas3x3>mean(saidas3x3), 1,0)))
+
+ggplot(dados, aes(x=inp.1,y=inp.2)) + geom_point(aes(color=y, shape=t))
+```
+
+
+Podemos avaliar o desempenho do classificador usando uma curva ROC:
+
+```{r}
+plot.roc(x           = ifelse(d$y < 0, 0, 1), 
+         predictor   = as.vector(saidas3x3), 
+         print.auc   = T,
+         ci          = TRUE, #usar intervalo de confiança
+         of          = "thresholds", # mostrar intervalo de confiança dos limiares para decisão entre classes
+         thresholds  = "best", # mostrar apenas do pareto-melhor classificador
+         print.thres = "best"
+         ) # mostrar numericamente as avaliações de sens e spec do melhor
+```
+
+Podemos testar se as curvas ROC de duas redes são diferentes:
+
+```{r}
+redeTreinada4x4 <- mlptrain(inp = d$S[,1:2], neurons = c(4,4), out=as.matrix(d$y), visual = F, it=2000)
+
+saidas4x4 <- mlp(d$S[,1:2],
+                 weight  = redeTreinada4x4$weight, 
+                 dist    = redeTreinada4x4$dist, 
+                 neurons = redeTreinada4x4$neurons, 
+                 actfns  = redeTreinada4x4$actfns)
+
+roc3x3 <- plot.roc(d$y, 
+                   predictor = as.vector(saidas3x3), 
+                   main      = "Comparação entre rede 3x3 e 4x4 (azul=3x3)",# titulo da figura
+                   col       = "#0000FF") 
+
+roc4x4 <- lines.roc(d$y, 
+                    predictor = as.vector(saidas4x4),
+                    col       = "#FF0000")
+
+roc.test(roc3x3, roc4x4)
+```
+
+Usando o pacote `RSNNS`:
+
+```{r}
+detach(package:neural) # remove pacote neural porque RSNNS tambem tem função mlp
+p_load(RSNNS)
+data(iris)
+iris        <- iris[sample(1:nrow(iris),length(1:nrow(iris))), # reordena amostra pois pode causar tendencias
+                    1:ncol(iris)]
+irisValues  <- iris[,1:4]
+irisTargets <- decodeClassLabels(iris[,5],    # codifica um neuronio por classe-alvo
+                                 valTrue  = 1, # resposta do neuronio sera 1 se dada classe-alvo for escolhida
+                                 valFalse = 0)# resposta será 0, caso contrário
+
+irisTT <- splitForTrainingAndTest(irisValues,  # vetores de caracteristicas
+                                  irisTargets,  # classe-alvo
+                                  ratio = 0.15) # 15 % é usado para teste
+
+irisTT <- normTrainingAndTestSet(irisTT)
+
+model <- mlp(x    = irisTT$inputsTrain, 
+             y    = irisTT$targetsTrain, 
+             size            = c(3,3), # neuronios nas camadas escondidas
+             learnFunc = "Std_Backpropagation", # algoritmo usado para corrigir erros nos pesos
+             learnFuncParams = c(0.13), 
+             maxit           = 45, #numero de iteracoes
+             inputsTest      = irisTT$inputsTest,
+             targetsTest     = irisTT$targetsTest
+             )
+
+source_url('https://gist.githubusercontent.com/fawda123/7471137/raw/466c1474d0a505ff044412703516c34f1a4684a5/nnet_plot_update.r') # para usar a função plot.nnet()
+plot.nnet(model)
+ 
+```
+
+
+Podemos avaliar o processo de aprendizado com as seguintes figuras:
+
+```{r}
+# linha vermelha indica erro nos dados de teste
+par(mfrow=c(2,2)) # quatro figuras serao mostradas
+plotIterativeError(model)
+
+predictions <- predict(model,irisTT$inputsTest)
+plotRegressionError(predictions[,2], irisTT$targetsTest[,2])
+
+confusionMatrix(irisTT$targetsTrain,fitted.values(model))
+confusionMatrix(irisTT$targetsTest,predictions)
+
+plotROC(fitted.values(model)[,2], irisTT$targetsTrain[,2])
+
+plotROC(predictions[,2], irisTT$targetsTest[,2])
+```
+
+
+## Área sob a curva ROC para mais de 2 classes
+
+```{r}
+mprobs <- data.frame(fitted.values(model))
+mprobs <- mprobs / apply(mprobs,1,sum) # multcap pede que linhas tenham soma 1
+colnames(mprobs) <- c("1","2","3")
+
+response <- factor(encodeClassLabels(irisTT$targetsTrain),labels=c("1","2","3"))
+
+auc(multcap(response = response, predicted = as.matrix(mprobs)))
+```
+
+
+## Remoção de camadas intermediárias: Pruning 
+
+```{r}
+pruneFuncParams <- list(max_pr_error_increase = 10.0, 
+                        pr_accepted_error = 1.0, 
+                        no_of_pr_retrain_cycles = 1000, 
+                        min_error_to_stop = 0.01,
+                        init_matrix_value = 1e-6, 
+                        input_pruning = TRUE, 
+                        hidden_pruning = TRUE)
+         
+model <- mlp(x    = irisTT$inputsTrain, 
+             y    = irisTT$targetsTrain, 
+             size            = c(3,3,4,4,5,6), # neuronios nas camadas escondidas
+             learnFunc = "Std_Backpropagation", # algoritmo usado para corrigir erros nos pesos
+             learnFuncParams = c(0.13), 
+             maxit           = 45, #numero de iteracoes
+             inputsTest      = irisTT$inputsTest,
+             targetsTest     = irisTT$targetsTest,
+             pruneFunc = "OptimalBrainSurgeon",
+             pruneFuncParams=pruneFuncParams)
+
+
+```
+
+
+
+## Outros pacotes
+
+```{r}
+p_load(neuralnet)
+p_load(RWeka)
+```
+
+
+# Atividade da aula:
+Treinar e testar redes neurais para o problema de classificação individual.
+
+
+
+

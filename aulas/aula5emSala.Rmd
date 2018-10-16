@@ -1,0 +1,36 @@
+---
+title: "Aula 5 - Mineração de Dados"
+output: html_notebook
+
+
+## dplyr e ggplot2
+```{r}
+require(pacman); p_load(dplyr,ggplot2,readr)
+
+cadastro <- read_csv2("cadastro.csv")
+ufu <- filter(cadastro, ORG_EXERCICIO == "FUNDACAO UNIV. FEDERAL DE UBERLANDIA")
+
+manter=c(); 
+for (atr in names(ufu)) { 
+  if (length(table(ufu[,atr]))>1) {
+    manter<-c(manter,atr)
+  } 
+}
+
+ufu <- select(ufu, manter)
+
+manter <- c( "Id_SERVIDOR_PORTAL"     ,   "NOME"    ,           
+ "DESCRICAO_CARGO"        ,   "CLASSE_CARGO"          ,   
+"REFERENCIA_CARGO"       ,   "NIVEL_CARGO"             , 
+ "SIGLA_FUNCAO"         ,     "NIVEL_FUNCAO"            , 
+ "FUNCAO"              ,      "CODIGO_ATIVIDADE"         ,
+"ATIVIDADE"           ,      "COD_UORG_LOTACAO"         ,
+ "UORG_LOTACAO"      ,        "ORG_LOTACAO"              ,
+"ORGSUP_LOTACAO"    ,        "UORG_EXERCICIO"          , "TIPO_VINCULO"     ,         "JORNADA_DE_TRABALHO"      ,
+"DATA_INGRESSO_CARGOFUNCAO", "DATA_INGRESSO_ORGAO")    
+
+ufu <- ufu %>% select(manter) %>% filter(FUNCAO!="Sem informacao")
+ 
+```
+
+

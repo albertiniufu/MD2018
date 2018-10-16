@@ -1,0 +1,87 @@
+---
+title: "Aula sobre Recuperação de Informação"
+output: html_notebook
+---
+
+
+```{r}
+require(tidyverse)
+require(quanteda)
+
+colunas <- cols(
+  'docID' = col_integer(),
+   'Opiniao' = col_factor(NULL),
+   'Texto' = col_character()
+)
+
+tweets <- read_csv("../dados/1000tweets.csv", col_types = colunas)
+names(tweets)
+```
+
+
+Criação do corpus:
+
+```{r}
+tweets <- corpus(tweets, docid_field = "docID", text_field = "Texto")
+
+# alguns documentos tokenizados
+sample(tokens(tweets),5)
+
+
+```
+
+# Análise dos termos úteis
+
+```{r}
+
+indice <- dfm(tweets,remove = c("quot",stopwords("en")), remove_punct =TRUE)
+
+indice <- indice %>% dfm_trim(min_termfreq = 3,
+                              max_docfreq = 100)
+
+#quantos tokens tem em cada documento?
+opinioes <- tweets$documents$Opiniao[ntoken(indice)>0]
+indice <- indice[ntoken(indice)>0]
+
+cat("Temos ", ndoc(indice), " documentos no corpus.\n")
+
+# para visualizar contexto de termos:
+kwic(tokens(tweets),"quot")
+
+head(textstat_frequency(indice,n=4,groups=docvars(indice,'Opiniao')))
+
+```
+
+Usando representação que computa o grau de importância de termos em documentos individuais (TF ==  termfreq) e na coleção de documentos (DF == docfreq):
+
+```{r}
+require(caret)
+indiceTFIDF <- dfm_tfidf(indice, scheme_tf = "count", scheme_df = "inverseprob")
+
+#Visualizacao
+#as.matrix(indiceTFIDF[1:3])
+
+treino <- createDataPartition(y=opinioes,p = .5)$Resample1
+
+```
+
+
+# Classificação com SVM
+
+```{r}
+require(e1071)
+
+modelo <- svm(x=indiceTFIDF[treino], y=opinioes[treino], kernel="linear")
+
+predicoes <- predict(modelo, indiceTFIDF[-treino])
+
+confusionMatrix(predicoes, opinioes[-treino])
+
+```
+
+
+
+# Atividade de Hoje:
+
+Testar problema de classificação com vários kernels diferente e ver qual é o melhor.
+

@@ -1,0 +1,218 @@
+---
+title: "Mineração de dados - Notas da Aula 5"
+author: "Marcelo Keese Albertini"
+date: "23 de agosto de 2018"
+output: html_notebook
+---
+
+## Leitura de dados usando pacote `readr`
+
+O pacote `readr` facilita a leitura de arquivos em relação às funções em `base::`.
+Além de podermos especificar qual será o tipo que será atribuído a cada variável, esse pacote já trabalha com `tibble`:
+
+```{r}
+p_load(readr)
+# as funções read.* do base:: podem ser trocadas pelas funções read_* do readr
+gruposDePesquisa <- read_csv2("dados/grupos-de-pesquisa.csv") # readr::read_csv2 já produz tibbles
+class(gruposDePesquisa)
+```
+
+Relacionado aos warnings que aparecem acima, o fazer a leitura de um arquivo CSV com uma função do `readr` é possível especificar funções de parsing que convertem `character` em um tipo mais específico.
+
+## Inspeção dos dados 
+
+Vamos usar o `tidyverse` que carrega vários outros pacotes úteis: ggplot2, dplyr, tidyr, tibble, readr, purrr ...
+
+```{r}
+Sys.setenv("https_proxy"="proxy.ufu.br:3128")
+require(pacman)
+p_load(tidyverse) # carrega ggplot2, dplyr, tidyr, tibble, readr, purrr ...
+```
+
+
+## Visualização usando ggplot2: exemplo Funções na UFU
+
+```
+# executar no bash
+wget "http://www.facom.ufu.br/~albertini/md/201801_Servidores.zip"
+unzip 2018*zip
+iconv -f iso88591 -t ascii//translit 20180131_Cadastro.csv > cadastro.csv
+iconv -f iso88591 -t ascii//translit 20180131_Remuneracao.csv > remuneracao.csv
+```
+
+
+```{r}
+p_load(dplyr)
+cadastro <- read_csv2("cadastro.csv")
+ufu <- filter(cadastro, ORG_EXERCICIO == "FUNDACAO UNIV. FEDERAL DE UBERLANDIA")
+
+ufu <- filter(cadastro, ORG_EXERCICIO == "FUNDACAO UNIV. FEDERAL DE UBERLANDIA")
+
+manter=c(); 
+for (atr in names(ufu)) { 
+  if (length(table(ufu[,atr]))>1) {
+    manter<-c(manter,atr)
+  } 
+}
+
+ufu <- select(ufu, manter)
+
+manter <- c( "Id_SERVIDOR_PORTAL"     ,   "NOME"    ,           
+ "DESCRICAO_CARGO"        ,   "CLASSE_CARGO"          ,   
+"REFERENCIA_CARGO"       ,   "NIVEL_CARGO"             , 
+ "SIGLA_FUNCAO"         ,     "NIVEL_FUNCAO"            , 
+ "FUNCAO"              ,      "CODIGO_ATIVIDADE"         ,
+"ATIVIDADE"           ,      "COD_UORG_LOTACAO"         ,
+ "UORG_LOTACAO"      ,        "ORG_LOTACAO"              ,
+"ORGSUP_LOTACAO"    ,        "UORG_EXERCICIO"          , "TIPO_VINCULO"     ,         "JORNADA_DE_TRABALHO"      ,
+"DATA_INGRESSO_CARGOFUNCAO", "DATA_INGRESSO_ORGAO")    
+
+ufu <- ufu %>% select(manter) %>% filter(FUNCAO!="Sem informacao")
+
+
+remuneracao <- read_csv2("remuneracao.csv")
+remuneracao <- remuneracao %>% select(Id_SERVIDOR_PORTAL, `REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)`, `REMUNERACAO BASICA BRUTA (R$)`)
+ufu<-left_join(x=ufu,y=remuneracao)
+ufu$DATA_INGRESSO_ORGAO <- as.Date(ufu$DATA_INGRESSO_ORGAO,format="%d/%m/%Y")
+ufu <- ufu %>% mutate(ANOS.SERVICO = as.numeric(difftime(hoje,as.Date(DATA_INGRESSO_ORGAO,format="%d/%m/%Y"),units="weeks")/52.25))
+
+```
+
+
+Figuras:
+
+```{r}
+attach(ufu)
+ggplot(data=ufu)+geom_point(mapping=aes(x=ANOS.SERVICO,y=`REMUNERACAO BASICA BRUTA (R$)`))
+ggplot(data=ufu)+geom_point(mapping=aes(x=ANOS.SERVICO,y=`REMUNERACAO BASICA BRUTA (R$)`,color=FUNCAO))
+ggplot(data=ufu)+geom_point(mapping=aes(x=FUNCAO,y=`REMUNERACAO BASICA BRUTA (R$)`, size=ANOS.SERVICO))
+ggplot(data=ufu)+geom_point(mapping=aes(x=FUNCAO,y=`REMUNERACAO BASICA BRUTA (R$)`, size=ANOS.SERVICO, color=FUNCAO))
+ggplot(data=ufu)+geom_point(mapping=aes(x=FUNCAO,y=`REMUNERACAO BASICA BRUTA (R$)`, size=ANOS.SERVICO, color=FUNCAO),alpha=0.5)
+ggplot(data=ufu)+geom_point(mapping=aes(x=ANOS.SERVICO,y=`REMUNERACAO BASICA BRUTA (R$)`,size=`REMUNERACAO BASICA BRUTA (R$)`))
+ggplot(data=ufu)+geom_point(mapping=aes(x=ANOS.SERVICO,y=`REMUNERACAO BASICA BRUTA (R$)`,size=`REMUNERACAO BASICA BRUTA (R$)`,color=ufu$CLASSE_CARGO))
+ggplot(data=ufu)+geom_point(mapping=aes(x=ANOS.SERVICO,y=`REMUNERACAO BASICA BRUTA (R$)`,size=`REMUNERACAO BASICA BRUTA (R$)`,color=CLASSE_CARGO))
+table(CLASSE_CARGO)
+table(ufu$NIVEL_FUNCAO)
+ggplot(data=ufu)+geom_point(mapping=aes(x=ANOS.SERVICO,y=`REMUNERACAO BASICA BRUTA (R$)`,size=`REMUNERACAO BASICA BRUTA (R$)`,color=NIVEL_FUNCAO))
+
+ufu$NIVEL_FUNCAO <- ordered(NIVEL_FUNCAO,labels=c("0009","0008","0007","0006","0005","0004","0003","0002","0001"))
+
+ggplot(data=ufu)+geom_point(mapping=aes(x=ANOS.SERVICO,y=`REMUNERACAO BASICA BRUTA (R$)`,color=NIVEL_FUNCAO,size=NIVEL_FUNCAO))
+ggplot(data=ufu)+geom_bar(mapping=aes(x=ATIVIDADE))
+table(ATIVIDADE)
+sort(table(ATIVIDADE))
+ufu %>% filter(ATIVIDADE %in% c("SECRETARIA","DIRETOR","REITOR","COORDENADOR")) %>%ggplot()+geom_bar(mapping=aes(x=ATIVIDADE))
+?geom_bar
+```
+
+
+
+
+
+## Visualização usando ggplot2: exemplo `data(mpg)`
+
+O dataset `data(mpg)` tem os seguintes atributos sobre carros:
+
+```{r}
+data(mpg)
+str(mpg)
+```
+
+A variável `mpg$displ` identifica o tamanho do motor em litros, `mpg$drv` trata do tipo de tração e as variável  `mpg$hwy` armazena o consumo de combustível na rodovia (`hwy`).
+
+Com o seguinte gráfico podemos visualizar o número de carros 4x4 ("4"), o número de tração frontal ("f") e de tração traseira ("r").
+```{r}
+ggplot(data=mpg, aes(x=drv))+geom_bar()
+```
+
+A função `ggplot` pertence ao pacote `ggplot2` que extende as funções de fazer gráficos no R.
+A sintaxe é a seguinte: 
+
+```
+ggplot(data = <DADOS>) +
+<GEOM_OBJETO-GEOMETRICO>(mapping = aes(<MAPEAMENTOS>))
+```
+
+onde `<DADOS>` é a variável que contém os dados que serão mostrados, `<GEOM_OBJETO-GEOMETRICO>` contém o tipo de objeto visual, um `geom`, que será usado para mostrar os dados e `<MAPEAMENTOS>` indica quais dimensões dos dados serão mapeamento para o `geom` em questão.
+
+Por exemplo, para visualizar a relação entre consumo `hwy` e tamanho do motor `displ` de carros podemos fazer uma figura mapeando esses valores em pontos (geom `point`) de um gráfico com eixos `x` e `y`. Esse tipo de figura se chamar *scatterplot*:
+
+```{r}
+ggplot(data=mpg) + geom_point(mapping=aes(x=displ, y=hwy))
+```
+
+Podemos colorir os pontos desse mesmo gráfico de acordo com o tipo de tração `drv`:
+
+```{r}
+ggplot(data=mpg) + geom_point(mapping=aes(x=displ, y=hwy, color=class))
+```
+
+Também é possível mapear o tamanho de cada ponto:
+
+```{r}
+ggplot(data=mpg) + geom_point(mapping=aes(x=displ, y=hwy, color=class, size=cyl))
+```
+
+Para visualizar pontos sobrepostos podemos controlar a transparência com `alpha`
+
+```{r}
+ggplot(data=mpg) + geom_point(mapping=aes(x=displ, y=hwy, color=class, size=cyl), alpha=.5)
+```
+
+Por outro lado, também vale a pena colocar um pouco de aleatoriedade para evitar o mesmo problema de sobreposição de pontos:
+
+
+```{r}
+ggplot(data=mpg) + geom_point(mapping=aes(x=displ, y=hwy, color=class, size=cyl), alpha=.5, position="jitter")
+```
+
+Outra forma de fazer uso de `jitter` é 
+
+```{r}
+ggplot(data=mpg) + geom_jitter(mapping=aes(x=cty,y=hwy,color=class))
+```
+
+
+Para variáveis categóricas tem o `geom_bar`:
+
+```{r}
+ggplot(data=mpg) + geom_bar(mapping=aes(x=class))
+```
+
+
+
+Se as medidas para as barras estão prontas, usar `stat = "identity"`:
+
+```{r}
+demo <- tribble(
+~a, ~b,
+"barra_1", 20,
+"barra_2", 30,
+"barra_3", 40
+)
+ggplot(data = demo) +
+geom_bar(
+mapping = aes(x = a, y = b), stat = "identity"
+)
+```
+
+
+
+
+# Atividade da aula 5
+
+Fazer figuras usando os dados do seu dataset com o `ggplot2` e `dplyr`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
