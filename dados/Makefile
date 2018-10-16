@@ -1,4 +1,3 @@
-
 all:grupos-de-pesquisa.csv cessoes.csv
 
 grupos-de-pesquisa.csv: loadGruposDePesquisa.R downloadGruposDePesquisa.sh
