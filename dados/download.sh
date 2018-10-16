@@ -1,5 +1,9 @@
-wget http://www.gcpp.com.br/wp-content/uploads/2016/04/bd_vot_impeachment.zip -O i.zip
-unzip i.zip
-mv bd_vot_impeachment.sav impeachment.sav
-iconv -f iso8859-1 -t ascii//trasnlit impeachment.sav > impeachment.tmp
-mv impeachment.tmp impeachment.sav
+wget http://www.portaltransparencia.gov.br/download-de-dados/servidores/201801_Servidores -O cad.zip
+unzip cad.zip
+mv 20180131_Cadastro.csv cadastrocivil.csv
+iconv -f iso8859-1 -t ascii//trasnlit cadastrocivil.csv > cadastrocivil.tmp
+mv cadastrocivil.tmp cadastrocivil.csv
+
+mv 20180131_Remuneracao.csv Remuneracao.csv
+iconv -f iso8859-1 -t ascii//translit Remuneracao.csv > Remuneracao.tmp
+mv Remuneracao.tmp Remuneracao.csv

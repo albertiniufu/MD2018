@@ -1,0 +1,138 @@
+---
+title: "projeto1"
+author: "Bernardo"
+date: "6 de setembro de 2018"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+Analisar as classes sociais dos cadastrados de acordo com as definições adotadas pelo IBGE:
+
+Adotando a divisão: 
+
+classe alta - A
+média-alta - B
+média-intermediária - C
+média-baixa - D
+excluídos(Pobre) - E
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+require(dplyr)
+require(readr)
+require(ggplot2)
+require(pacman)
+
+
+social <- read.csv2("/home/gudnunes/Área de Trabalho/MD/MD2018/dados/cadastrocivil.csv")
+
+
+  manter=c(); 
+for (atr in names(social)) { 
+  if (length(table(social[,atr]))>1) {
+    manter<-c(manter,atr)
+  } 
+}
+
+social <- select(social, manter)
+
+manter <- c( "Id_SERVIDOR_PORTAL",   "NOME", "UF_EXERCICIO",          
+ "DESCRICAO_CARGO", "CLASSE_CARGO",   
+"REFERENCIA_CARGO", "NIVEL_CARGO", 
+ "SIGLA_FUNCAO", "NIVEL_FUNCAO", 
+ "FUNCAO", "CODIGO_ATIVIDADE",
+"ATIVIDADE" , "COD_UORG_LOTACAO",
+ "UORG_LOTACAO", "ORG_LOTACAO" ,
+"ORGSUP_LOTACAO" ,        "UORG_EXERCICIO" , "TIPO_VINCULO" ,         "JORNADA_DE_TRABALHO" ,
+"DATA_INGRESSO_CARGOFUNCAO", "DATA_INGRESSO_ORGAO")  
+
+social <- social %>% select(manter) %>% filter(FUNCAO!="Sem informacao")
+
+remuneracao <- read_csv2("/home/gudnunes/Área de Trabalho/Mineração de dados/MD2018/dados/Remuneracao.csv")
+remuneracao <- remuneracao %>% select(Id_SERVIDOR_PORTAL, `REMUNERACAO BASICA BRUTA (R$)`, `REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)`)
+social<-left_join(x=social,y=remuneracao)
+
+```
+
+Aqui podemos ver uma média dos ganhos de todos o cadastrados, depois de deduções obrigatórias: 
+
+```{r}
+
+social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)` <- as.double(social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)`)
+
+boxplot(social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)`, horizontal = T)
+
+
+```
+
+
+Precisa criar umas condições e verificar os salários para determinar suas classes sociais:
+O definido pelo IBGE é: (Analisando como renda familiar)
+
+classe alta(Rico) - A    -> R$ 18.740,01 ou mais
+média-alta - B    -> R$ 9.370,01 a R$ 18.740,00
+média-intermediária - C   -> R$ 3.748,01 a R$ 9.370,00
+média-baixa - D   -> R$ 1.874,01 a R$ 3.748,00
+excluídos(Pobre) - E    -> Até R$ 1.874,00
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+
+
+
+social["CLASSE_SOCIAL"] <- c("i")
+
+social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)` <- as.double(social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)`)
+
+social <- social %>% filter(social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)` != is.na(social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)`))
+
+social$CLASSE_SOCIAL[social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)` <= 1874] <- "Pobre"
+social$CLASSE_SOCIAL[social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)` > 1874 & social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)` <= 3748] <- "Media-baixa"
+social$CLASSE_SOCIAL[social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)` > 3748 & social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)` <= 9370] <- "Media-intermediaria"
+social$CLASSE_SOCIAL[social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)` > 9370 & social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)` <= 18740] <- "Media-alta"
+social$CLASSE_SOCIAL[social$`REMUNERACAO APOS DEDUCOES OBRIGATORIAS (R$)` > 18740
+] <- "Rico"
+
+  
+
+```
+
+Aqui podemos ver a quantidade de cada classe social no Brasil:
+- Grande quantidade de Média-intermediaria
+
+```{r warning=FALSE}
+
+attach(social)
+ggplot(data=social)+geom_bar(mapping=aes(x=CLASSE_SOCIAL))
+
+```
+
+
+Agora podemos ver a quantidade de cada classe social nos estados brasileiros.
+Podemos notar que o sudeste é onde tem a maior quantidade de ricos, junto a Brasília e RS.
+
+```{r warning=FALSE}
+
+social1 <- filter(social, social$UF_EXERCICIO != -1)
+attach(social1)
+ggplot(data=social1)+geom_bar(mapping=aes(x=UF_EXERCICIO, fill = CLASSE_SOCIAL))+theme(legend.position = 'top')
+
+
+```
+
+
+
+Como essas análises já estavam faceis de ser colocadas, os valores das classes sociais já estavam pre definidas pelo IBGE, não precisei fazer nenhuma Predição.
+  Aqui está o que poderia ser predicto:
+  
+  - QUAL O SALÁRIO DE UMA PESSOA, APENAS COM OUTROS DADOS, COMO:
+  
+  -ESTADO
+  -CARGO
+  -ORGÃO
+  -FUNÇÃO
+  -ATIVIDADE
+  -ANO DE ENTRADA
+  -JORNADA DE TRABALHO
+  
+  

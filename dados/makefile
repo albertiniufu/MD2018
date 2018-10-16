@@ -1,4 +1,3 @@
-all: impeachment.csv
+all: cadastrocivil.csv
 	
-impeachment.csv: download.sh
-	bash download.sh
+cadastrocivil.csv: download.sh
