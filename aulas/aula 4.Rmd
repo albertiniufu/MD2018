@@ -1,0 +1,21 @@
+---
+title: "Aula 4"
+author: "Tiago Pereira de Faria"
+output: html_notebook
+---
+
+```{r}
+Sys.setenv(https_proxy="proxy.ufu.br:3128")
+require(pacman)
+
+# Quais opções estão disponiveis?
+names(options())
+
+# Para ativar modo de debug
+options(error=recover)
+
+#mudando numero de digitos
+print(pi)
+options(digits=3)
+print(pi)
+```

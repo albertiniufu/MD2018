@@ -1,0 +1,49 @@
+---
+title: "pre-analises"
+author: "Tiago Pereira de Faria"
+date: "4 de setembro de 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE, include=FALSE}
+require(dplyr)
+dados <- read.csv("../dados/dados.csv")
+dados <- tbl_df(dados)
+dados$customerID <- as.character(dados$customerID)
+```
+# Customer Churn
+Aqui é listado algumas análises superficiais dos dados do Customer Churn.
+
+## Quantidade de Clientes de cada gênero:
+```{r}
+
+summary(dados$gender)
+```
+## Quantidade de Clientes de cada método de pagamento:
+```{r}
+summary(dados$PaymentMethod)
+```
+## BoxPlot dos pagamentos mensais dos clientes:
+```{r}
+boxplot(dados$MonthlyCharges, horizontal = T)
+```
+## BoxPlot dos pagamentos totais dos clientes:
+```{r}
+boxplot(dados$TotalCharges, horizontal = T)
+```
+
+## Tabela que mostra a relação entre a presença de dependentes e a aquisição de serviços de segurança online
+```{r}
+table(select(dados,"Dependents","OnlineSecurity"))
+```
+É possível observar uma tendência maior a aquisição de serviços de segurança online por pessoas que possuem dependentes, visto que crianças podem ser mais vulneráveis à golpes e tentativas de roubos de dados.
+
+## Tabela que mostra a relação entre clientes que possuem parceiros e a aquisição de planos de streaming de filmes
+```{r}
+table(select(dados,"StreamingMovies","Partner"))
+```
+É possível concluir que pessoas que possuem parceiros têm maior tendência a contratar serviços de streaming de filmes. Talvez isso se dê ao fato de assistir filmes seja um programa comum de casais.

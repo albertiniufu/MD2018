@@ -1,0 +1,5 @@
+dados <- read.csv("dados/dados.csv")
+require(dplyr)
+dados <- tbl_df(dados)
+dados$customerID <- as.character(dados$customerID)
+dados$SeniorCitizen <- factor(ifelse(dados$SeniorCitizen == 1,"yes","no"))
