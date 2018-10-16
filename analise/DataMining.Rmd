@@ -1,0 +1,72 @@
+---
+title: "DataMining"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Pacotes necessarios para a execução do código
+```{r, include=FALSE}
+Sys.setenv(https_proxy="proxy.ufu.br:3128")
+require(pacman)
+p_load(dplyr)
+p_load(foreign)
+p_load(ggplot2)
+```
+Usar o Makefile para baixar o dataset da internet.
+
+```{bash, include=F}
+cd ../dados
+make
+```
+Importar o dataset para o Rstudio, escolher as colunas mais relevantes e modificar seu tipo se necessário.
+
+```{r}
+votos<- tbl_df(read.spss("../dados/vd_vot_impeachment/bd_vot_impeachment.sav"))
+names(votos)
+table_votos <- select(votos,"nome_civil","partido","voto_impeach","sexo","uf","colig_elei","n_mandat","gastos_camp")
+table_votos
+names(table_votos)
+table_votos$partido <- as.factor(table_votos$partido)
+table_votos$uf <- as.factor(table_votos$uf)
+table_votos$colig_elei <- as.factor(table_votos$colig_elei)
+table_votos$n_mandat <- as.ordered (table_votos$n_mandat)
+glimpse(table_votos)
+```
+
+Algumas informações podem ser extraídas desta tabela rapidamente
+```{r}
+length(levels(table_votos$partido))
+str(table_votos)
+print(head(table_votos))
+```
+
+É importante plotar as informações em gráficos
+```{r}
+votos <- table_votos
+attach(votos)
+
+summary(votos)
+summary(votos$gastos_camp)
+summary(votos$n_mandat)
+
+boxplot(votos$gastos_camp,horizontal = T)
+boxplot(n_mandat,horizontal = T)
+
+```
+
+Tarefa 4
+```{r}
+ggplot(data=votos)+geom_bar(mapping=aes(x=voto_impeach))
+ggplot(data=votos)+geom_bar(mapping=aes(x=partido))
+
+```
+
+
+
+
+
+
+
+
