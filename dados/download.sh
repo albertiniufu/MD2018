@@ -7,4 +7,3 @@ mv cadastrocivil.tmp cadastrocivil.csv
 mv 20180131_Remuneracao.csv Remuneracao.csv
 iconv -f iso8859-1 -t ascii//translit Remuneracao.csv > Remuneracao.tmp
 mv Remuneracao.tmp Remuneracao.csv
-
