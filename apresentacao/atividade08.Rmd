@@ -1,0 +1,149 @@
+---
+title: "Atividade 08"
+author: "Adriano Araújo"
+date: "October 17, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+require(pacman)
+require(tidyverse)
+
+capes <- read_csv2("/home/adriano/Documents/MD/CLSS-01/capes.csv")
+capes <- select(capes,-c("AN_BASE",
+                       "CD_PROGRAMA",
+                       "NM_ENTIDADE_ENSINO",
+                       "ID_ADD_PRODUCAO_INTELECTUAL",
+                       "ID_PRODUCAO_INTELECTUAL",
+                       "ID_SUBTIPO_PRODUCAO",
+                       "ID_AREA_CONCENTRACAO",
+                       "ID_LINHA_PESQUISA",
+                       "ID_PROJETO",
+                       "DH_INICIO_AREA_CONC",
+                       "DH_FIM_AREA_CONC",
+                       "DH_INICIO_LINHA",
+                       "DH_FIM_LINHA",
+                       "DT_TITULACAO",
+                       "DS_KEYWORD",
+                       "ID_TP_EXPECTATIVA_ATUACAO",
+                       "ID_PESSOA_DISCENTE",
+                       "DT_MATRICULA",
+                       "ID_GRAU_ACADEMICO",
+                       "DS_CATEGORIA_ORIENTADOR",
+                       "NM_REGIAO",
+                       "NM_UF_IES",
+                       "CD_GRANDE_AREA_CONHECIMENTO",
+                       "CD_AREA_CONHECIMENTO",
+                       "CD_SUBAREA_CONHECIMENTO",
+                       "CD_ESPECIALIDADE",
+                       "NM_ESPECIALIDADE",
+                       "DS_EMAIL_DISCENTE",
+                       "NR_VOLUME",
+                       "DS_RESUMO",
+                       "DS_URL_TEXTO_COMPLETO",
+                       "ID_PESSOA_ORIENTADOR",
+                       
+                       "NM_PROGRAMA",
+                       "NM_PRODUCAO",
+                       "NM_SUBTIPO_PRODUCAO",
+                       "NM_PROJETO",
+                       "IN_TRABALHO_MESMA_AREA",
+                       "NM_TP_VINCULO",
+                       "IN_ORIENT_PARTICIPOU_BANCA",
+                       "DS_BIBLIOTECA_DEPOSITARIA",
+                       "NM_EXPECTATIVA_ATUACAO",
+                       "NM_DISCENTE",
+                       "NM_GRAU_ACADEMICO",
+                       "NM_CATEGORIA_DOCENTE",
+                       "SG_UF_IES",
+                       "NM_AREA_AVALIACAO",
+                       "NR_PAGINAS",
+                       "NM_IDIOMA",
+                       "NM_DISCENTE",
+                       "NM_PROJETO",
+                       
+                       "NM_AREA_CONCENTRACAO",
+                       "NM_LINHA_PESQUISA",
+                       "NM_SUBAREA_CONHECIMENTO",
+                       "DS_PALAVRA_CHAVE",
+                       
+                       "NM_ORIENTADOR",
+                       "NM_AREA_CONHECIMENTO"))
+
+glimpse(capes)
+
+capes$SG_ENTIDADE_ENSINO <- as.factor(capes$SG_ENTIDADE_ENSINO)
+capes$DS_ABSTRACT <- as.character(capes$DS_ABSTRACT)
+capes$NM_GRANDE_AREA_CONHECIMENTO <- as.factor(capes$NM_GRANDE_AREA_CONHECIMENTO)
+
+capes$DS_ABSTRACT <- tolower(capes$DS_ABSTRACT)
+capes <- filter(capes, SG_ENTIDADE_ENSINO == "UFU")
+capes$ID <- seq.int(nrow(capes))
+capes$SG_ENTIDADE_ENSINO <- NULL
+
+glimpse(capes)
+
+p_load(readtext, tidyverse, quanteda)
+
+corpora <- corpus(capes,docid_field = "ID", text_field = "DS_ABSTRACT")
+
+words <- tokens(corpora,remove_punct = TRUE,remove_numbers = TRUE)
+words <- tokens_remove(words,stopwords("en"))
+
+indice <- dfm(words) %>% dfm_trim(max_docfreq = 100,max_termfreq = 10)
+textstat_frequency(indice)
+
+area <- corpora$documents$NM_GRANDE_AREA_CONHECIMENTO[ntoken(indice)>0]
+indice <- indice[ntoken(indice)>0,]
+
+indiceTFIDF <- dfm_tfidf(indice,scheme_df = "count",scheme_tf = "boolean")
+
+matriz <- as.matrix(indiceTFIDF)
+cat("Dimensões número docs X número de palavras:", dim(matriz),"\n")
+cat("Exemplos de pesos de documentos:\n")
+print(matriz[1,1:20])
+
+lista <- list("x" = matriz,"y" = as.numeric(area))
+```
+
+```{r}
+p_load(caret)
+
+inTraining <- createDataPartition(area,p=.10)$Resample1
+indiceTFIDF <- dfm_tfidf(indice[inTraining],scheme_df = "count",scheme_tf = "boolean")
+matriz <- as.matrix(indiceTFIDF)
+
+lista <- list("x" = matriz,"y" = as.numeric(area[inTraining]))
+```
+
+
+#Perceptron (Freestats)
+
+```{r}
+p_load(freestats)
+
+r <- perceptrain(S       = lista$x,    # dados de entrada com bias
+                 y       = lista$y,    # dados esperados
+                 alpha_k = .001,   # parametro de treino
+                 endcost = 0)      # criterio de parada
+
+```
+
+#Multi-layer Perceptron (Neural)
+
+```{r}
+p_load(neural)
+
+redeTreinada3x3 <- mlptrain(inp     = lista$x, 
+                            neurons = c(3,3), 
+                            out     = as.matrix(lista$y), 
+                            visual  = F, 
+                            it      = 100)
+
+saidas3x3 <- mlp(lista$x,   weight  = redeTreinada3x3$weight, 
+                            dist    = redeTreinada3x3$dist, 
+                            neurons = redeTreinada3x3$neurons, 
+                            actfns  = redeTreinada3x3$actfns)
+```
