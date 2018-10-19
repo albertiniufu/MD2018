@@ -1,0 +1,27 @@
+---
+title: "Atividade 06-JP"
+output: html_notebook
+---
+
+Geometry Point
+
+```{r}
+require(ggplot2)
+attach(medicamentos)
+
+ggplot(data=medicamentos)+geom_point(mapping=aes(x=NO_PRODUTO,y=NU_PF18_INTEIRO))
+
+```
+
+Geometry Bar 
+
+```{r}
+ggplot(data=medicamentos)+geom_bar(mapping=aes(x=NO_PRODUTO, y=NU_PF18_INTEIRO), stat = "identity")
+```
+
+Geometry Bars collor
+
+```{r}
+ggplot(data=medicamentos)+geom_bar(mapping=aes(x=NO_PRODUTO, y=NU_PF18_INTEIRO, fill=NO_PRODUTO), stat = "identity") + guides(fill=FALSE)
+```
+
