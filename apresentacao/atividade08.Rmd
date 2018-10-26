@@ -1,0 +1,382 @@
+---
+title: "Atividade 08"
+author: "Adriano Araújo"
+date: "October 17, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+require(pacman)
+require(tidyverse)
+
+capes <- read_csv2("/home/adriano/Documents/MD/CLSS-01/capes.csv")
+capes <- select(capes,-c("AN_BASE",
+                       "CD_PROGRAMA",
+                       "NM_ENTIDADE_ENSINO",
+                       "ID_ADD_PRODUCAO_INTELECTUAL",
+                       "ID_PRODUCAO_INTELECTUAL",
+                       "ID_SUBTIPO_PRODUCAO",
+                       "ID_AREA_CONCENTRACAO",
+                       "ID_LINHA_PESQUISA",
+                       "ID_PROJETO",
+                       "DH_INICIO_AREA_CONC",
+                       "DH_FIM_AREA_CONC",
+                       "DH_INICIO_LINHA",
+                       "DH_FIM_LINHA",
+                       "DT_TITULACAO",
+                       "DS_KEYWORD",
+                       "ID_TP_EXPECTATIVA_ATUACAO",
+                       "ID_PESSOA_DISCENTE",
+                       "DT_MATRICULA",
+                       "ID_GRAU_ACADEMICO",
+                       "DS_CATEGORIA_ORIENTADOR",
+                       "NM_REGIAO",
+                       "NM_UF_IES",
+                       "CD_GRANDE_AREA_CONHECIMENTO",
+                       "CD_AREA_CONHECIMENTO",
+                       "CD_SUBAREA_CONHECIMENTO",
+                       "CD_ESPECIALIDADE",
+                       "NM_ESPECIALIDADE",
+                       "DS_EMAIL_DISCENTE",
+                       "NR_VOLUME",
+                       "DS_RESUMO",
+                       "DS_URL_TEXTO_COMPLETO",
+                       "ID_PESSOA_ORIENTADOR",
+                       
+                       "NM_PROGRAMA",
+                       "NM_PRODUCAO",
+                       "NM_SUBTIPO_PRODUCAO",
+                       "NM_PROJETO",
+                       "IN_TRABALHO_MESMA_AREA",
+                       "NM_TP_VINCULO",
+                       "IN_ORIENT_PARTICIPOU_BANCA",
+                       "DS_BIBLIOTECA_DEPOSITARIA",
+                       "NM_EXPECTATIVA_ATUACAO",
+                       "NM_DISCENTE",
+                       "NM_GRAU_ACADEMICO",
+                       "NM_CATEGORIA_DOCENTE",
+                       "SG_UF_IES",
+                       "NM_AREA_AVALIACAO",
+                       "NR_PAGINAS",
+                       "NM_IDIOMA",
+                       "NM_DISCENTE",
+                       "NM_PROJETO",
+                       
+                       "NM_AREA_CONCENTRACAO",
+                       "NM_LINHA_PESQUISA",
+                       "NM_SUBAREA_CONHECIMENTO",
+                       "DS_PALAVRA_CHAVE",
+                       
+                       "NM_ORIENTADOR",
+                       "NM_AREA_CONHECIMENTO"))
+
+glimpse(capes)
+
+capes$SG_ENTIDADE_ENSINO <- as.factor(capes$SG_ENTIDADE_ENSINO)
+capes$DS_ABSTRACT <- as.character(capes$DS_ABSTRACT)
+capes$NM_GRANDE_AREA_CONHECIMENTO <- as.factor(capes$NM_GRANDE_AREA_CONHECIMENTO)
+
+capes$DS_ABSTRACT <- tolower(capes$DS_ABSTRACT)
+capes <- filter(capes, SG_ENTIDADE_ENSINO == "UFU")
+capes$ID <- seq.int(nrow(capes))
+capes$SG_ENTIDADE_ENSINO <- NULL
+
+capes$Agrarias   <- ifelse(capes$NM_GRANDE_AREA_CONHECIMENTO == 'CIENCIAS AGRARIAS',1,-1 )
+capes$Biologicas <- ifelse(capes$NM_GRANDE_AREA_CONHECIMENTO == 'CIENCIAS BIOLOGICAS',1,-1 )
+capes$Saude      <- ifelse(capes$NM_GRANDE_AREA_CONHECIMENTO == 'CIENCIAS DA SAUDE',1,-1 )
+capes$Exatas     <- ifelse(capes$NM_GRANDE_AREA_CONHECIMENTO == 'CIENCIAS EXATAS E DA TERRA',1,0 )
+capes$Humanas    <- ifelse(capes$NM_GRANDE_AREA_CONHECIMENTO == 'CIENCIAS HUMANAS',1,-1 )
+capes$Sociais    <- ifelse(capes$NM_GRANDE_AREA_CONHECIMENTO == 'CIENCIAS SOCIAIS APLICADAS',1,0 )
+capes$Engenharia <- ifelse(capes$NM_GRANDE_AREA_CONHECIMENTO == 'ENGENHARIAS',1,-1 )
+capes$Artes      <- ifelse(capes$NM_GRANDE_AREA_CONHECIMENTO == 'LINGUISTICA, LETRAS E ARTES',1,0 )
+capes$Multi      <- ifelse(capes$NM_GRANDE_AREA_CONHECIMENTO == 'MULTIDISCIPLINAR',1,-1 )
+
+glimpse(capes)
+
+p_load(readtext, tidyverse, quanteda)
+
+corpora <- corpus(capes,docid_field = "ID", text_field = "DS_ABSTRACT")
+
+words <- tokens(corpora,remove_punct = TRUE,remove_numbers = TRUE)
+words <- tokens_remove(words,stopwords("en"))
+
+indice <- dfm(words) %>% dfm_trim(max_docfreq = 100,max_termfreq = 10)
+textstat_frequency(indice)
+
+area <- corpora$documents$NM_GRANDE_AREA_CONHECIMENTO[ntoken(indice)>0]
+agraria    <- corpora$documents$Agrarias[ntoken(indice)>0]
+biologicas <- corpora$documents$Biologicas[ntoken(indice)>0]
+saude      <- corpora$documents$Saude[ntoken(indice)>0]
+exatas     <- corpora$documents$Exatas[ntoken(indice)>0]
+humanas    <- corpora$documents$Humanas[ntoken(indice)>0]
+sociais    <- corpora$documents$Sociais[ntoken(indice)>0]
+engeharias <- corpora$documents$Engenharia[ntoken(indice)>0]
+artes      <- corpora$documents$Artes[ntoken(indice)>0]
+multi      <- corpora$documents$Multi[ntoken(indice)>0]
+
+indice <- indice[ntoken(indice)>0,]
+
+indiceTFIDF <- dfm_tfidf(indice,scheme_df = "count",scheme_tf = "boolean")
+
+matriz <- as.matrix(indiceTFIDF)
+cat("Dimensões número docs X número de palavras:", dim(matriz),"\n")
+cat("Exemplos de pesos de documentos:\n")
+print(matriz[1,1:20])
+
+```
+
+
+```{r}
+p_load(caret)
+
+inTraining <- createDataPartition(area,p=.09)$Resample1
+indiceTFIDF <- dfm_tfidf(indice[inTraining],scheme_df = "count",scheme_tf = "boolean")
+matriz <- as.matrix(indiceTFIDF)
+
+lista <- list("x" = matriz,"y" = as.numeric(area[inTraining]))
+lista01 <- list("x" = matriz,"y" = as.numeric(agraria[inTraining]))
+lista02 <- list("x" = matriz,"y" = as.numeric(biologicas[inTraining]))
+lista03 <- list("x" = matriz,"y" = as.numeric(saude[inTraining]))
+lista04 <- list("x" = matriz,"y" = as.numeric(exatas[inTraining]))
+lista05 <- list("x" = matriz,"y" = as.numeric(humanas[inTraining]))
+lista06 <- list("x" = matriz,"y" = as.numeric(sociais[inTraining]))
+lista07 <- list("x" = matriz,"y" = as.numeric(engeharias[inTraining]))
+lista08 <- list("x" = matriz,"y" = as.numeric(artes[inTraining]))
+lista09 <- list("x" = matriz,"y" = as.numeric(multi[inTraining]))
+```
+
+#Perceptron (Freestats)
+
+```{r}
+p_load(freestats)
+
+r01 <- perceptrain(S       = lista01$x,
+                   y       = lista01$y,
+                   alpha_k = .001,  
+                   endcost = 0)
+t01 = rep(0,nrow(lista01$x))
+for (i in 1:nrow(lista01$x)) {
+   t01[i] = r01$z %*% lista01$x[i,]
+}
+t01 <- ifelse(t01>0,1,0)
+
+r02 <- perceptrain(S       = lista02$x,
+                   y       = lista02$y,
+                   alpha_k = .001,  
+                   endcost = 0)
+t02 = rep(0,nrow(lista02$x))
+for (i in 1:nrow(lista02$x)) {
+   t02[i] = r02$z %*% lista02$x[i,]
+}
+t02 <- ifelse(t02>0,1,0)
+
+r03 <- perceptrain(S       = lista03$x,
+                   y       = lista03$y,
+                   alpha_k = .001,  
+                   endcost = 0)
+t03 = rep(0,nrow(lista03$x))
+for (i in 1:nrow(lista03$x)) {
+   t03[i] = r03$z %*% lista03$x[i,]
+}
+t03 <- ifelse(t03>0,1,0)
+
+r04 <- perceptrain(S       = lista04$x,
+                   y       = lista04$y,
+                   alpha_k = .001,  
+                   endcost = 0)
+t04 = rep(0,nrow(lista04$x))
+for (i in 1:nrow(lista04$x)) {
+   t04[i] = r04$z %*% lista04$x[i,]
+}
+t04 <- ifelse(t04>0,1,0)
+
+r05 <- perceptrain(S       = lista05$x,
+                   y       = lista05$y,
+                   alpha_k = .001,  
+                   endcost = 0)
+t05 = rep(0,nrow(lista05$x))
+for (i in 1:nrow(lista05$x)) {
+   t05[i] = r05$z %*% lista05$x[i,]
+}
+t05 <- ifelse(t05>0,1,0)
+
+r06 <- perceptrain(S       = lista06$x,
+                   y       = lista06$y,
+                   alpha_k = .001,  
+                   endcost = 0)
+t06 = rep(0,nrow(lista06$x))
+for (i in 1:nrow(lista06$x)) {
+   t06[i] = r06$z %*% lista06$x[i,]
+}
+t06 <- ifelse(t06>0,1,0)
+
+r07 <- perceptrain(S       = lista07$x,
+                   y       = lista07$y,
+                   alpha_k = .001,  
+                   endcost = 0)
+t07 = rep(0,nrow(lista07$x))
+for (i in 1:nrow(lista07$x)) {
+   t07[i] = r07$z %*% lista07$x[i,]
+}
+t07 <- ifelse(t07>0,1,0)
+
+r08 <- perceptrain(S       = lista08$x,
+                   y       = lista08$y,
+                   alpha_k = .001,  
+                   endcost = 0)
+t08 = rep(0,nrow(lista08$x))
+for (i in 1:nrow(lista08$x)) {
+   t08[i] = r08$z %*% lista08$x[i,]
+}
+t08 <- ifelse(t08>0,1,0)
+
+r09 <- perceptrain(S       = lista09$x,
+                   y       = lista09$y,
+                   alpha_k = .001,  
+                   endcost = 0)
+t09 = rep(0,nrow(lista09$x))
+for (i in 1:nrow(lista09$x)) {
+   t09[i] = r09$z %*% lista09$x[i,]
+}
+t09 <- ifelse(t09>0,1,0)
+
+t <- ifelse(t01>0,1,0)
+t <- ifelse(t02>0,2,t)
+t <- ifelse(t03>0,3,t)
+t <- ifelse(t04>0,4,t)
+t <- ifelse(t05>0,5,t)
+t <- ifelse(t06>0,6,t)
+t <- ifelse(t07>0,7,t)
+t <- ifelse(t08>0,8,t)
+t <- ifelse(t09>0,9,t)
+
+t
+as.numeric(area[inTraining])
+```
+
+#Multi-layer Perceptron (Neural)
+
+```{r}
+p_load(neural)
+
+#Agrarias
+redeTreinada01 <- mlptrain(inp     = lista01$x, 
+                            neurons = c(2,2), 
+                            out     = as.matrix(lista01$y), 
+                            visual  = F, 
+                            it      = 100)
+saidas01 <- mlp(lista01$x,   weight  = redeTreinada01$weight, 
+                            dist    = redeTreinada01$dist, 
+                            neurons = redeTreinada01$neurons, 
+                            actfns  = redeTreinada01$actfns)
+saidasarea <- ifelse(saidas01>0,1,0)
+
+#Biologicas
+redeTreinada02 <- mlptrain(inp     = lista02$x, 
+                            neurons = c(2,2), 
+                            out     = as.matrix(lista02$y), 
+                            visual  = F, 
+                            it      = 100)
+saidas02 <- mlp(lista02$x,   weight  = redeTreinada02$weight, 
+                            dist    = redeTreinada02$dist, 
+                            neurons = redeTreinada02$neurons, 
+                            actfns  = redeTreinada02$actfns)
+saidasarea <- ifelse(saidas01>0,2,saidasarea)
+
+#Saude
+redeTreinada03 <- mlptrain(inp     = lista03$x, 
+                            neurons = c(2,2), 
+                            out     = as.matrix(lista03$y), 
+                            visual  = F, 
+                            it      = 100)
+saidas03 <- mlp(lista03$x,   weight  = redeTreinada03$weight, 
+                            dist    = redeTreinada03$dist, 
+                            neurons = redeTreinada03$neurons, 
+                            actfns  = redeTreinada03$actfns)
+saidasarea <- ifelse(saidas01>0,3,saidasarea)
+
+#Exatas
+redeTreinada04 <- mlptrain(inp     = lista04$x, 
+                            neurons = c(2,2), 
+                            out     = as.matrix(lista04$y), 
+                            visual  = F, 
+                            it      = 100)
+saidas04 <- mlp(lista04$x,   weight  = redeTreinada04$weight, 
+                            dist    = redeTreinada04$dist, 
+                            neurons = redeTreinada04$neurons, 
+                            actfns  = redeTreinada04$actfns)
+saidasarea <- ifelse(saidas01>0,4,saidasarea)
+
+#Humanas
+redeTreinada05 <- mlptrain(inp     = lista05$x, 
+                            neurons = c(2,2), 
+                            out     = as.matrix(lista05$y), 
+                            visual  = F, 
+                            it      = 100)
+saidas05 <- mlp(lista05$x,   weight  = redeTreinada05$weight, 
+                            dist    = redeTreinada05$dist, 
+                            neurons = redeTreinada05$neurons, 
+                            actfns  = redeTreinada05$actfns)
+saidasarea <- ifelse(saidas01>0,5,saidasarea)
+
+#Sociais
+redeTreinada06 <- mlptrain(inp     = lista06$x, 
+                            neurons = c(2,2), 
+                            out     = as.matrix(lista06$y), 
+                            visual  = F, 
+                            it      = 100)
+saidas06 <- mlp(lista06$x,   weight  = redeTreinada06$weight, 
+                            dist    = redeTreinada06$dist, 
+                            neurons = redeTreinada06$neurons, 
+                            actfns  = redeTreinada06$actfns)
+saidasarea <- ifelse(saidas01>0,6,saidasarea)
+
+#Engenharias
+p_load(neural)
+redeTreinada07 <- mlptrain(inp     = lista07$x, 
+                            neurons = c(2,2), 
+                            out     = as.matrix(lista07$y), 
+                            visual  = F, 
+                            it      = 100)
+saidas07 <- mlp(lista07$x,   weight  = redeTreinada07$weight, 
+                            dist    = redeTreinada07$dist, 
+                            neurons = redeTreinada07$neurons, 
+                            actfns  = redeTreinada07$actfns)
+saidasarea <- ifelse(saidas01>0,7,saidasarea)
+
+# Artes
+redeTreinada08 <- mlptrain(inp     = lista08$x, 
+                            neurons = c(2,2), 
+                            out     = as.matrix(lista08$y), 
+                            visual  = F, 
+                            it      = 100)
+saidas08 <- mlp(lista08$x,   weight  = redeTreinada08$weight, 
+                            dist    = redeTreinada08$dist, 
+                            neurons = redeTreinada08$neurons, 
+                            actfns  = redeTreinada08$actfns)
+saidasarea <- ifelse(saidas01>0,8,saidasarea)
+
+# Multi
+redeTreinada09 <- mlptrain(inp     = lista09$x, 
+                            neurons = c(2,2), 
+                            out     = as.matrix(lista09$y), 
+                            visual  = F, 
+                            it      = 100)
+saidas09 <- mlp(lista09$x,   weight  = redeTreinada09$weight, 
+                            dist    = redeTreinada09$dist, 
+                            neurons = redeTreinada09$neurons, 
+                            actfns  = redeTreinada09$actfns)
+saidasarea <- ifelse(saidas01>0,9,saidasarea)
+```
+
+```{r}
+p_load(ggplot2)
+dados <- data.frame(inp = lista01$x,
+                    y   = as.factor(lista$y),
+                    t   = as.factor(saidasarea))
+
+ggplot(dados, aes(x=inp.1,y=inp.2)) + geom_point(aes(color=y, shape=t))
+```
+
