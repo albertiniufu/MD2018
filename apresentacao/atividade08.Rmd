@@ -252,8 +252,7 @@ t <- ifelse(t07>0,7,t)
 t <- ifelse(t08>0,8,t)
 t <- ifelse(t09>0,9,t)
 
-t
-as.numeric(area[inTraining])
+confusionMatrix(as.factor(t),as.factor(lista$y))
 ```
 
 #Multi-layer Perceptron (Neural)
@@ -369,6 +368,8 @@ saidas09 <- mlp(lista09$x,   weight  = redeTreinada09$weight,
                             neurons = redeTreinada09$neurons, 
                             actfns  = redeTreinada09$actfns)
 saidasarea <- ifelse(saidas01>0,9,saidasarea)
+
+confusionMatrix(as.factor(saidasarea),as.factor(lista$y))
 ```
 
 ```{r}
