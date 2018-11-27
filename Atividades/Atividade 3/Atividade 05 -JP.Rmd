@@ -1,0 +1,31 @@
+---
+title: "Atividade 05 - JP"
+output: html_notebook
+---
+
+Summary
+
+```{r}
+summary(medicamentos$NU_PF18_INTEIRO)
+summary(medicamentos)
+```
+
+Boxplot
+
+```{r}
+boxplot(medicamentos$NU_PF18_INTEIRO, horizontal = T)
+```
+
+Margins tables
+
+```{r}
+tablemedicamentos <- table(medicamentos$NU_PF0_INTEIRO)
+
+margin.table(tablemedicamentos,1)
+
+head(margin.table(tablemedicamentos,1))
+
+margin.table(tablemedicamentos)
+
+```
+
