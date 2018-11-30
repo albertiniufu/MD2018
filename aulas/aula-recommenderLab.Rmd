@@ -1,0 +1,50 @@
+---
+title: "Aula recomendação: recommenderlab"
+output: html_notebook
+---
+
+```{r}
+Sys.setenv(ALL_PROXY="proxy.ufu.br:3128")
+require(pacman)
+p_load(recommenderlab)
+```
+
+
+## Dataset: pré-processamento
+
+```{r}
+data(Jester5k) # dataset de recomendações de piadas
+
+d <- sample(Jester5k, 1000)
+
+# Mostrar número de piadas avaliadas
+rowCounts(d[1,])
+```
+
+##Piadas avaliadas por um usuário
+
+```{r}
+as(d[1,],"list")
+```
+
+
+```{r}
+hist(getRatings(d))
+hist(getRatings(normalize(d)))
+```
+
+## Criação de um recomendador
+
+```{r}
+recomendador <- Recommender(data=d, method="POPULAR") # User-based Collaborative Filtering -- Outros: IBCF, POPULAR, SVD, SVDF
+recomendacoes <- predict(recomendador, Jester5k[1001:1002], n=5)
+as(recomendacoes,"list")
+## métodos implementados estão em: recommenderRegistry$get_entries()
+```
+
+
+```{r}
+tresRecomendacoes <- bestN(recomendacoes, n = 3)
+as
+```
+

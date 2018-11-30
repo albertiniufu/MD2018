@@ -1,0 +1,80 @@
+---
+title: "Caret e Ensemble learning"
+output: html_notebook
+---
+
+## Carregando pacotes: `caret`
+```{r}
+Sys.setenv(https_proxy="proxy.ufu.br:3128")
+require(pacman)
+p_load(caret,e1071,tidyverse)
+```
+
+## Preparação dos dados de entrada
+```{r}
+#https://archive.ics.uci.edu/ml/machine-learning-databases/adult/
+adult <- read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data",
+                  col_names = c("idade","tipo-emprego","representatividade","educacacao","educacao-num","estado-civil","ocupacao","relacionamento","raca","sexo","ganho-capital","perda-capital","horas-por-semana","pais-nativo","nivelRenda"), )
+
+adult        <- adult %>% mutate_if(is.character, factor)
+treino.ids   <- createDataPartition(adult$nivelRenda, p=0.7, list=FALSE)
+adult.treino <- adult[ treino.ids,]
+adult.test   <- adult[-treino.ids,]
+```
+
+## Aprendizado
+```{r}
+
+train(nivelRenda ~ ., data = adult.treino, method="ranger")
+```
+
+
+
+## Treino: técnicas de reamostragem
+
+As técnicas de treino são métodos de estimar o erro de predição de algum modelo, obtido com um algoritmo configurado por seus hiper-parâmetros, em dados
+não disponíveis para treino.
+
+
+## Técnicas de reamostragem:
+* k-fold cross-validation: once vs repeated
+Divide em $k$ partes sendo que 1 parte fica reservada para avaliação do modelo.
+Possível repetir a divisão de modo aleatório várias vezes para obter acurácias médias.
+É comum usar $k=5$.
+
+* leave-one-out cross-validation
+Treina com todos os exemplos exceto um que é reservado para validação. Todos exemplos são reservados uma vez para obter média de validação. 
+Alto custo computacional pois são $n$ (número de exemplos de treino) diferentes estimações de modelos.
+
+A técnica usar apenas uma amostra para avaliação do modelo é o caso extremo em que $k=n$. 
+Nesse caso, o bias do erro de predição é baixo e a variância é alta.
+
+* bootstrap: simple estimation vs 632 rule
+
+$k$-fold reduz em $n$/$k$ o tamanho da amostra para treino.
+
+A técnica bootstrap usa $B$ conjuntos de treino gerados por reamostragem com substituição para manter o tamanho o conjunto de treino e manter propriedades estatísticas para treino de modelos e avaliar desempenho médio.
+
+A regra 632 produz uma estatística para reduz o bias na estimativa do erro de predição.
+Essa regra usa amostras sorteadas usando resubstituição de forma que conjuntos sorteadas separadamente possuem em média $0.632n$ elementos distintos.
+O desempenho nessas amostras é combinado com a estimação de erro usando bootstrapping de $n$ amostras e estimação leave-one-out cross-validation.
+A combinação dessas estatística busca compensar o bias de subestimar erros usando amostras com $0.632n$ elementos distintos com o bias de superestimar o erro usando bootstraping de $n$ amostras com leave-one-out cross-validation.
+
+Contudo, usar a regra 632 para casos em que existe alto overfitting tende a gerar estimativas de erros futuros que sistematicamente subestimam os valores reais.
+
+
+## Boosting
+
+## Bagging
+
+## Ensemble
+
+
+
+
+
+
+## Pacotes relacionados
+
+* Cubist: aprendizado por ensemble usando "comitês"
+* caretEnsemble

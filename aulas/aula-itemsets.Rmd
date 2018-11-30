@@ -1,0 +1,69 @@
+---
+title: "Mineração de itemsets"
+output: html_notebook
+---
+
+# Carregando dados de exemplo
+
+```{r}
+require(tidyverse,curl)
+
+if (file.exists("ml-latest-small.zip") == FALSE) {
+  download.file("http://files.grouplens.org/datasets/movielens/ml-latest-small.zip","ml-latest-small.zip")
+  unzip("ml-latest-small.zip")
+}
+
+movies <- read_csv("ml-latest-small/movies.csv")
+titlesDup <- which(duplicated(movies$title))
+movies$title[titlesDup] <- paste0(movies$title[titlesDup],"(dup)") # marca nomes de filmes duplicados
+
+ratingsComplete <- read_csv("ml-latest-small/ratings.csv")
+ratings <- filter(ratingsComplete, rating==5) %>% select(userId, movieId)# guarda somente filmes que agradam
+movies  <- filter(movies, movieId %in% ratings$movieId)
+
+cat(str(head(movies,5)),"\n",str(head(ratings,5)))
+```
+
+# Preparação de base de transações
+
+```{r}
+require(arules)
+tableRatings <- table(ratings)
+colnames(tableRatings) <- movies$title
+
+transacoes <- as(tableRatings > 0, "transactions")
+itemsetsFreqFechados <- eclat(transacoes, parameter = list(supp=0.02,target="closed"))
+regrasFechadas <- ruleInduction(itemsetsFreq, confidence=.8)
+```
+
+
+Queremos achar as partes das transações que se repetem bastante. A proporção das transações em que um itemset aparece é o seu suporte (support). A confiança (confidence) de que uma regra X leva Y é a proporção entre suporte de X e Y e somente X. Uma boa regra de associação tem confiança alta de que X leva a Y.
+
+Um itemset tem frequência alta se seu suporte é maior que um valor de limiar de suporte.
+Como sub-itemsets de itemsets frequentes também são frequentes, um itemset maximal é aquele que não é contido por nenhum outro frequente.
+Se todos os itemsets que incluem um dado itemset i forem menos frequentes que i, então i é dito fechado. O conjunto dos itemsets fechados contém todos os itemsets maximais.
+
+O alavancamento (lift) de uma regra X leva Y indica a força de uma regra: sup(X e Y)/ (sup(X)*sup(Y)). Essa medida pode ser usada para selecionar parte das regras que tem confiança alta.
+
+```{r}
+p_load(arulesViz)
+
+print(head(quality(regras)))
+inspect(regras[96,])
+
+plot(regras, measure=c("support", "lift"), shading = "confidence", engine='interactive')
+```
+
+
+
+
+## grupos de regras
+
+```{r}
+plot(regras, method="grouped")
+```
+
+
+
+
+

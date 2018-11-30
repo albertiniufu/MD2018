@@ -1,0 +1,108 @@
+---
+title: "Sistemas de recomendação"
+output: html_notebook
+---
+
+Sistemas de recomendação usam dados de hábitos de usuários para identificar quais itens são bons para sugerir a usuários.
+Existem duas abordagens principais: 1) filtragem colaborativa; e 2) baseado em fatoração de matrizes.
+
+Os três principais tipos de filtragem colaborativa são: centrados em usuários, centrados em itens e baseados em modelos.
+
+Duas tarefas podem ser objetivadas: prever o gosto de um usuário em relação a um item, obter uma lista decrescente dos itens Top-N que um usuário tem mais interesse.
+
+O pacote `rrecsys` implementa vários algoritmos baseados nessas abordagens:
+```{r}
+Sys.setenv(ALL_PROXY="proxy.ufu.br:3128")
+require(pacman)
+#p_load(rrecsys)
+install_github("albertiniufu/rrecsys")
+require(rrecsys)
+```
+
+
+## Exploração do dados
+
+```{r}
+data("mlLatest100k") # dataset de ratings do MovieLens
+
+ML <- defineData(mlLatest100k)
+
+#Quais filmes foram mais avaliados?
+head(sort(colRatings(ML),decreasing = T))
+
+#Quais usuários são mais ativos?
+head(sort(rowRatings(ML),dec=T))
+
+# Qual é a esparsidade dos dados? Qual proporção da matrix é "0" ?
+sparsity(ML)
+```
+
+## Pré-processamento
+
+```{r}
+# coloca dados em escala
+ML <- defineData(mlLatest100k, minimum = .5, maximum = 5, intScale = TRUE)
+
+# seleção de parte dos dados
+subML <- ML[rowRatings(ML)>200, colRatings(ML) >200]
+
+#trabalhar com dados menos esparsos é mais fácil
+sparsity(subML)
+```
+
+## Treino de recomendador
+```{r}
+userBasedRec <- rrecsys(subML, "ubknn", simFunct="Pearson")
+itemBasedRec <- rrecsys(subML, "ibknn", simFunct="cos")
+```
+
+## Uso do recomendador para TopN
+```{r}
+recsMaioresRatings <- recommendHPR(userBasedRec, topN = 3) # emite as 3 principais recomendações para cada usuario usando os maiores ratings previstos
+recsMaisFrequentesNosVizinhos <- recommendMF(userBasedRec, topN = 3, pt = .1) # emite as 3 principais recomendações para cada usuario usando os maiores ratings previstos
+```
+
+## Avaliação
+É comum usar validação cruzada para avaliar o sistema de recomendações. Divide-se itens que contém avaliações em $k$ subconjuntos para avaliações no estilo de classificação/regressão. É possível avaliar se a avaliação predita em uma escala numérica coincide com o que usuários avaliaram usando erro absoluto médio (mean absolute error - MAE). Também é possível avaliar a qualidade das top-K recomendações.
+
+```{r}
+avaliação <- evalModel(subML, folds = 5)
+```
+
+Os resultados de comparação (baseline) são obtidos da seguinte forma:
+
+```{r}
+e <- evalModel(subML, folds = 2)
+globAv <- evalPred(e, alg = "globalaverage")
+itemAv <- evalPred(e,  "itemAver")
+userAv <- evalPred(e,  "useraverage")
+```
+
+
+
+## Avaliar estimação de preferência com filtragem colaborativa centrada em usuários baseada em K-NN
+```{r}
+e <- evalModel(subML, folds = 2)
+
+# metodo usa os neigh=10 vizinhos mais proximos para fazer sugestoes de itens
+# k pequeno limita o número de itens que podem ser sugeridos pois poucos vizinhos tem
+# k grande torna recomendações imprecisas em relação à preferência do usuário
+# a função para avaliar a similaridade entre usuários é a correlação de Pearson com simFunct = "Pearson"
+evalPred(e, "ubknn", simFunct = "Pearson", neigh = 10)
+```
+
+
+## Avaliar Top-N ranking com filtragem colaborativa baseada em usuários com K-NN
+```{r}
+e <- evalModel(subML, folds = 2)
+
+# metodo usa os neigh=10 vizinhos mais proximos para fazer sugestoes de itens
+# k pequeno limita o número de itens que podem ser sugeridos pois poucos vizinhos tem
+# k grande torna recomendações imprecisas em relação à preferência do usuário
+# a função para avaliar a similaridade entre usuários é a cosseno com simFunct = "cos"
+# "ubknn" == User-based K-NN 
+evalRec(e, "ubknn", simFunct = "cos", neigh = 10, positiveThreshold = 3, topN = 3)
+```
+
+
+
