@@ -1,0 +1,76 @@
+---
+title: "Mineração Itemsets"
+output: html_notebook
+---
+
+```{r}
+require(pacman)
+p_load("arules", "curl", "tidyverse", "arulesViz")
+
+url="http://files.grouplens.org/datasets/movielens/ml-latest-small.zip"
+file="ml-latest-small.zip"
+
+if (file.exists(file)==FALSE ){
+  download.file(url,destfile = file)
+  unzip(file)
+}
+
+filmes  <- read_csv("ml-latest-small/movies.csv")
+notas   <- read_csv("ml-latest-small/ratings.csv")
+notas5  <- filter(notas, rating == 5) %>% select(userId, movieId)
+filmes5 <- filter(filmes, movieId %in% notas5$movieId) %>% select(movieId,title)
+
+tabNotas5 <- table(notas5)
+colnames(tabNotas5) <- as.character(filmes5$title)
+
+transacoes <- as(tabNotas5 >0 ,"transactions" ) #  cada pessoa é uma "transacao"
+
+itemsetsFrequentes <- eclat(transacoes, parameter = list(supp=0.01,target="closed"))
+regrasAssociacao   <- ruleInduction(itemsetsFrequentes,transacoes, confidence=.8)
+
+ruleExplorer(regrasAssociacao)
+
+```
+
+##Funções úteis:
+```{r}
+read.transactions()
+inspect(regras)
+]
+```
+
+
+
+
+```{r}
+require(arules)
+require(curl)
+require(tidyverse)
+
+Sys.setenv(ALL_PROXY="proxy.ufu.br:3128")
+file="ml-latest-small.zip"
+
+if (file.exists(file) == FALSE) {
+download.file("http://files.grouplens.org/datasets/movielens/ml-latest-small.zip",file)
+  unzip(file)
+}
+
+notas   <- read_csv("ml-latest-small/ratings.csv")
+filmes  <- read_csv("ml-latest-small/movies.csv")
+
+
+notas5  <- filter(notas, rating == 5) %>% select(userId, movieId)
+filmes5 <- filter(filmes, movieId %in% notas5$movieId) %>% select(movieId, title)
+
+tabelaNotas5 <- table(notas5)
+
+colnames(tabelaNotas5) <- filmes5$title
+
+transacoes <- as(tabelaNotas5 >0, "transactions")
+
+
+itemsetsFreq <- eclat(transacoes,parameter = list(supp=0.01, target="closed"))
+
+```
+
+
