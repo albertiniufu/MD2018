@@ -1,0 +1,53 @@
+---
+title: "Caret e ensemble"
+output: html_notebook
+---
+
+```{r}
+Sys.setenv(https_proxy="proxy.ufu.br:3128")
+require(pacman)
+p_load(tidyverse, caret)
+
+irisPreModel <- preProcess(iris,method=c("center","scale","nzv"))
+irisPre <- predict(irisPreModel, iris)
+
+#grid <- expand.grid(mfinal=c(2,3), maxdepth=c(3,4,5))
+ctrl <- trainControl(method="cv",number = 2)
+
+require(doMC)
+modelo <- train(x=irisPre[,1:4], y=irisPre[,5] ,
+                method=c("AdaBag"), 
+                tuneLength = 5
+                , trCtrl=ctrl)
+
+
+
+
+```
+
+
+```{r}
+fitControl <- trainControl(method = "repeatedcv",
+                           number = 10,
+                           repeats = 10,
+                           classProbs = TRUE,
+                           summaryFunction = twoClassSummary,
+                           search = "random")
+
+set.seed(825)
+rda_fit <- train(Species ~ ., data = iris, 
+                  method = "rda",
+                  metric = "ROC",
+                  tuneLength = 30, # busca automatica por 30 diferentes combinacoes de hiperparametros
+                  trControl = fitControl)
+rda_fit
+```
+
+
+## Pacotes relacionados
+
+É possível usar múltiplos cores:
+```{r}
+p_load(doMC)
+```
+
